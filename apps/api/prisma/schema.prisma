@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+enum Category {
+  CONCIERTO
+  EXPOSICION
+  TALLER
+  MERCADILLO
+  TEATRO
+  CONFERENCIA
+  GASTRONOMIA
+  DEPORTE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  events        Event[]        @relation("OrganizerEvents")
+  reservations  Reservation[]
+  reviews       Review[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+}
+
+model Event {
+  id            String      @id @default(uuid())
+  title         String
+  description   String      @db.Text
+  category      Category
+  startDate     DateTime
+  endDate       DateTime
+  venue         String
+  city          String
+  latitude      Float?
+  longitude     Float?
+  capacity      Int
+  price         Float       @default(0)
+  imageUrl      String?
+  imagePublicId String?
+  status        EventStatus @default(DRAFT)
+  featured      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  organizerId String
+  organizer   User   @relation("OrganizerEvents", fields: [organizerId], references: [id])
+
+  reservations Reservation[]
+  reviews      Review[]
+
+  @@index([startDate])
+  @@index([city])
+  @@index([category])
+}
+
+model Reservation {
+  id         String            @id @default(uuid())
+  quantity   Int               @default(1)
+  totalPrice Float
+  status     ReservationStatus @default(CONFIRMED)
+  createdAt  DateTime          @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+}
