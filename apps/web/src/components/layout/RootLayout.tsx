@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { ToastViewport } from '@/components/ui/ToastViewport';
 import { Navbar } from './Navbar';
 
 export function RootLayout() {
@@ -18,6 +19,7 @@ export function RootLayout() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Outlet />
+      <ToastViewport />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 
 import { RootLayout } from '@/components/layout/RootLayout';
-import { AuthProvider } from '@/context/AuthContext';
 import { ForbiddenPage } from '@/pages/ForbiddenPage';
 import { HomePage } from '@/pages/HomePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -13,8 +12,7 @@ import { RoleRoute } from './RoleRoute';
 
 export function AppRouter() {
   return (
-    <AuthProvider>
-      <Routes>
+    <Routes>
         <Route element={<RootLayout />}>
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -40,6 +38,5 @@ export function AppRouter() {
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
-    </AuthProvider>
   );
 }

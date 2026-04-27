@@ -4,8 +4,6 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 import { useAuth } from '@/context/AuthContext';
-import { type ApiError } from '@/services/api';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,7 +25,6 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -37,9 +34,8 @@ export function LoginPage() {
     try {
       await login(data.email, data.password);
       navigate(from, { replace: true });
-    } catch (err) {
-      const apiErr = err as ApiError;
-      setError('root', { message: apiErr.error ?? 'Error al iniciar sesión' });
+    } catch {
+      // AuthContext fires toast.error — nothing else needed here
     }
   };
 
@@ -52,12 +48,6 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-            {errors.root && (
-              <Alert variant="destructive">
-                <AlertDescription>{errors.root.message}</AlertDescription>
-              </Alert>
-            )}
-
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input
