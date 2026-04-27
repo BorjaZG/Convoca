@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { Button } from '@/components/ui/button';
 
 export function Navbar() {
@@ -27,6 +28,7 @@ export function Navbar() {
               <Button asChild size="sm">
                 <Link to="/register">Registrarse</Link>
               </Button>
+              <ThemeToggle />
             </>
           ) : (
             <>
@@ -46,6 +48,7 @@ export function Navbar() {
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Cerrar sesión
               </Button>
+              <ThemeToggle />
             </>
           )}
         </div>
