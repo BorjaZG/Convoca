@@ -137,6 +137,17 @@ export async function deleteEvent(id: string, userId: string, userRole: Role) {
   }
 }
 
+export async function getPendingEvents() {
+  return prisma.event.findMany({
+    where: { status: EventStatus.DRAFT },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      organizer: { select: ORGANIZER_SELECT },
+      _count: { select: { reservations: true, reviews: true } },
+    },
+  });
+}
+
 export async function getMyEvents(organizerId: string) {
   return prisma.event.findMany({
     where: { organizerId },

@@ -60,4 +60,9 @@ export const eventsService = {
     const res = await api.get<{ data: EventWithOrganizer[] }>('/api/events/mine');
     return res.data;
   },
+
+  pending: async (): Promise<EventWithOrganizer[]> => {
+    const res = await api.get<{ data: EventWithOrganizer[] }>('/api/events/pending');
+    return res.data;
+  },
 };

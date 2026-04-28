@@ -17,7 +17,16 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 
 export async function me(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const reservations = await reservationsService.getMyReservations(req.user!.id);
+    const { status, startDate, endDate } = req.query as {
+      status?: string;
+      startDate?: string;
+      endDate?: string;
+    };
+    const reservations = await reservationsService.getMyReservations(req.user!.id, {
+      status: status as reservationsService.ReservationFilters['status'],
+      startDate,
+      endDate,
+    });
     res.json({ data: reservations });
   } catch (err) {
     next(err);
