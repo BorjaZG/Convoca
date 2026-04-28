@@ -14,6 +14,9 @@ router.get('/', eventsController.list);
 // ORGANIZER: sus propios eventos — debe ir antes de /:id
 router.get('/mine', requireAuth, requireRole('ORGANIZER', 'ADMIN'), eventsController.mine);
 
+// ADMIN: eventos en borrador para moderar — debe ir antes de /:id
+router.get('/pending', requireAuth, requireRole('ADMIN'), eventsController.pending);
+
 // Detalle público
 router.get('/:id', eventsController.getById);
 

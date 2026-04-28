@@ -53,6 +53,15 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+export async function pending(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const events = await eventsService.getPendingEvents();
+    res.json({ data: events });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function mine(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const events = await eventsService.getMyEvents(req.user!.id);

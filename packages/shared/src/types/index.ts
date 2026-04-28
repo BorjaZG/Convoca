@@ -34,21 +34,22 @@ export interface UserStats {
 }
 
 export interface OrganizerStats {
-  totalEvents: number;
-  upcomingEvents: number;
+  activeEvents: number;
   totalReservations: number;
   totalRevenue: number;
   averageRating: number | null;
   eventsByCategory: { category: Category; count: number }[];
+  reservationsByMonth: { month: string; count: number }[];
 }
 
 export interface AdminStats {
   totalUsers: number;
-  totalEvents: number;
+  publishedEvents: number;
   totalReservations: number;
   totalRevenue: number;
   eventsByMonth: { month: string; count: number }[];
-  topOrganizers: { id: string; name: string; totalEvents: number }[];
+  categoryDistribution: { category: Category; count: number }[];
+  topOrganizers: { id: string; name: string; totalEvents: number; totalRevenue: number }[];
 }
 
 export type Category =

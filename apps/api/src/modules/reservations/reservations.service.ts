@@ -33,9 +33,26 @@ export async function createReservation(data: CreateReservationInput, userId: st
   });
 }
 
-export async function getMyReservations(userId: string) {
+export interface ReservationFilters {
+  status?: ReservationStatus;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function getMyReservations(userId: string, filters: ReservationFilters = {}) {
   return prisma.reservation.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(filters.status && { status: filters.status }),
+      ...((filters.startDate || filters.endDate) && {
+        event: {
+          startDate: {
+            ...(filters.startDate ? { gte: new Date(filters.startDate) } : {}),
+            ...(filters.endDate ? { lte: new Date(filters.endDate) } : {}),
+          },
+        },
+      }),
+    },
     orderBy: { createdAt: 'desc' },
     include: {
       event: { select: { id: true, title: true, startDate: true, venue: true, city: true, imageUrl: true } },
