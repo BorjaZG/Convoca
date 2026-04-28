@@ -1,5 +1,56 @@
 export type Role = 'USER' | 'ORGANIZER' | 'ADMIN';
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface SafeUser {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  avatarUrl?: string | null;
+}
+
+export interface EventWithOrganizer extends Event {
+  organizer: SafeUser;
+  averageRating?: number | null;
+  _count?: {
+    reservations: number;
+    reviews: number;
+  };
+}
+
+export interface UserStats {
+  totalReservations: number;
+  eventsAttended: number;
+  upcomingEvents: number;
+}
+
+export interface OrganizerStats {
+  totalEvents: number;
+  upcomingEvents: number;
+  totalReservations: number;
+  totalRevenue: number;
+  averageRating: number | null;
+  eventsByCategory: { category: Category; count: number }[];
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalEvents: number;
+  totalReservations: number;
+  totalRevenue: number;
+  eventsByMonth: { month: string; count: number }[];
+  topOrganizers: { id: string; name: string; totalEvents: number }[];
+}
+
 export type Category =
   | 'CONCIERTO'
   | 'EXPOSICION'

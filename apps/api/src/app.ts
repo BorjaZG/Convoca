@@ -7,6 +7,11 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import authRouter from './modules/auth/auth.routes';
+import eventsRouter from './modules/events/events.routes';
+import reservationsRouter from './modules/reservations/reservations.routes';
+import reviewsRouter from './modules/reviews/reviews.routes';
+import statsRouter from './modules/stats/stats.routes';
+import usersRouter from './modules/users/users.routes';
 
 export const app = express();
 
@@ -21,5 +26,10 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/events', eventsRouter);
+app.use('/api/reservations', reservationsRouter);
+app.use('/api/reviews', reviewsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/stats', statsRouter);
 
 app.use(errorHandler);
