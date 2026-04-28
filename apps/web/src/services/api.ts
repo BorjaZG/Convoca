@@ -20,6 +20,7 @@ async function execute<T>(endpoint: string, options: RequestInit, retry: boolean
     const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
+      signal: options.signal,
     });
     if (refreshRes.ok) {
       return execute<T>(endpoint, options, false);
@@ -41,4 +42,13 @@ export const api = {
 
   post: <T>(endpoint: string, body?: unknown, options: RequestInit = {}) =>
     execute<T>(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) }, true),
+
+  put: <T>(endpoint: string, body?: unknown, options: RequestInit = {}) =>
+    execute<T>(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }, true),
+
+  patch: <T>(endpoint: string, body?: unknown, options: RequestInit = {}) =>
+    execute<T>(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) }, true),
+
+  delete: <T = void>(endpoint: string, options: RequestInit = {}) =>
+    execute<T>(endpoint, { ...options, method: 'DELETE' }, true),
 };

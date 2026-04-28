@@ -11,6 +11,27 @@ export class AppError extends Error {
   }
 }
 
+export class NotFoundError extends AppError {
+  constructor(message = 'No encontrado') {
+    super(404, message);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'Acceso denegado') {
+    super(403, message);
+    this.name = 'ForbiddenError';
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message = 'Conflicto') {
+    super(409, message);
+    this.name = 'ConflictError';
+  }
+}
+
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ error: err.message });
