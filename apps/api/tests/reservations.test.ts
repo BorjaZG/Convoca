@@ -116,6 +116,34 @@ describe('POST /api/reservations', () => {
       .send({ eventId: testEventId, quantity: 1 });
     expect(res.status).toBe(401);
   });
+
+  it('devuelve 400 con quantity cero (validación zod)', async () => {
+    const res = await request(app)
+      .post('/api/reservations')
+      .set('Cookie', userCookies)
+      .send({ eventId: testEventId, quantity: 0 });
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('GET /api/reservations/event/:id', () => {
+  it('devuelve 403 si el organizador no es propietario del evento', async () => {
+    const otherEmail = 'test.other.org.res@convoca.test';
+    const otherReg = await request(app)
+      .post('/api/auth/register')
+      .send({ email: otherEmail, password: 'OtherOrg1', name: 'Other Org Res' });
+    const otherId = otherReg.body.user.id;
+    await prisma.user.update({ where: { id: otherId }, data: { role: 'ORGANIZER' } });
+    const otherCookies = parseCookies(otherReg.headers['set-cookie']);
+
+    const res = await request(app)
+      .get(`/api/reservations/event/${testEventId}`)
+      .set('Cookie', otherCookies);
+    expect(res.status).toBe(403);
+
+    await prisma.refreshToken.deleteMany({ where: { userId: otherId } });
+    await prisma.user.delete({ where: { id: otherId } });
+  });
 });
 
 describe('PATCH /api/reservations/:id/cancel', () => {

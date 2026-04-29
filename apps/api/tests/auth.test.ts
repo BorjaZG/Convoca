@@ -104,6 +104,23 @@ describe('POST /api/auth/refresh', () => {
   });
 });
 
+describe('POST /api/auth/refresh — happy path', () => {
+  it('devuelve 200 y rota las cookies con refreshToken válido', async () => {
+    const loginRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+
+    const cookies = parseCookies(loginRes.headers['set-cookie']);
+
+    const refreshRes = await request(app).post('/api/auth/refresh').set('Cookie', cookies);
+    expect(refreshRes.status).toBe(200);
+
+    const setCookie = refreshRes.headers['set-cookie'] as string[];
+    expect(setCookie.some(c => c.startsWith('accessToken='))).toBe(true);
+    expect(setCookie.some(c => c.startsWith('refreshToken='))).toBe(true);
+  });
+});
+
 describe('POST /api/auth/logout', () => {
   it('revoca el refreshToken y limpia cookies', async () => {
     const loginRes = await request(app)

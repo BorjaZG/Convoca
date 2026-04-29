@@ -4,6 +4,7 @@ import type { Category, EventWithOrganizer } from '@convoca/shared';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { formatDate, formatPrice } from '@/lib/formatters';
 
 const CATEGORY_STYLES: Record<Category, string> = {
   CONCIERTO:   'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
@@ -27,20 +28,12 @@ const CATEGORY_LABELS: Record<Category, string> = {
   DEPORTE:     'Deporte',
 };
 
-function formatDate(date: string | Date) {
-  return new Intl.DateTimeFormat('es-ES', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(date));
-}
-
 interface EventCardProps {
   event: EventWithOrganizer;
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const priceLabel = event.price === 0 ? 'Gratuito' : `${event.price.toFixed(2)} €`;
+  const priceLabel = formatPrice(event.price);
   const hasRating = event.averageRating != null;
 
   return (

@@ -197,8 +197,7 @@ describe('GET /api/reviews/event/:eventId', () => {
 });
 
 describe('DELETE /api/reviews/:id', () => {
-  it('elimina la propia reseña y devuelve 204', async () => {
-    // Crear una segunda reserva ATTENDED para poder crear otra reseña que luego borremos
+  it('devuelve 403 al intentar eliminar la reseña de otro usuario', async () => {
     const anotherUser = await prisma.user.create({
       data: {
         email: 'delete.review.user@convoca.test',
@@ -214,22 +213,50 @@ describe('DELETE /api/reviews/:id', () => {
         eventId: attendedEventId,
         userId: anotherUser.id,
         rating: 2,
-        comment: 'Reseña que será eliminada por el test de borrado automatizado.',
+        comment: 'Reseña que será usada para verificar que otro usuario no puede borrarla.',
       },
     });
 
-    // Obtener cookies del nuevo usuario
-    await prisma.user.update({ where: { id: anotherUser.id }, data: { passwordHash: '$2a$10$invalidhashfordeletion' } });
-    // Usamos admin via BD para simplificar: borramos directamente desde BD verificando el servicio
     const deleteRes = await request(app)
       .delete(`/api/reviews/${review.id}`)
-      .set('Cookie', userCookies); // user no es el autor → 403
+      .set('Cookie', userCookies); // userCookies ≠ anotherUser → 403
 
     expect(deleteRes.status).toBe(403);
 
-    // Limpiar
     await prisma.review.delete({ where: { id: review.id } });
     await prisma.reservation.deleteMany({ where: { userId: anotherUser.id } });
     await prisma.user.delete({ where: { id: anotherUser.id } });
+  });
+
+  it('el autor puede eliminar su propia reseña → 204', async () => {
+    const authorEmail = 'author.delete.review@convoca.test';
+    const authorReg = await request(app)
+      .post('/api/auth/register')
+      .send({ email: authorEmail, password: 'AuthorPass1', name: 'Author Delete' });
+    const authorId = authorReg.body.user.id;
+    const authorCookies = parseCookies(authorReg.headers['set-cookie']);
+
+    await prisma.reservation.create({
+      data: { eventId: attendedEventId, userId: authorId, quantity: 1, totalPrice: 10, status: 'ATTENDED' },
+    });
+
+    const reviewRes = await request(app)
+      .post('/api/reviews')
+      .set('Cookie', authorCookies)
+      .send({
+        eventId: attendedEventId,
+        rating: 3,
+        comment: 'Reseña propia que el autor va a eliminar en este test.',
+      });
+    expect(reviewRes.status).toBe(201);
+
+    const deleteRes = await request(app)
+      .delete(`/api/reviews/${reviewRes.body.data.id}`)
+      .set('Cookie', authorCookies);
+    expect(deleteRes.status).toBe(204);
+
+    await prisma.reservation.deleteMany({ where: { userId: authorId } });
+    await prisma.refreshToken.deleteMany({ where: { userId: authorId } });
+    await prisma.user.delete({ where: { id: authorId } });
   });
 });
