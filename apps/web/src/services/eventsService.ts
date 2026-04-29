@@ -25,6 +25,7 @@ export type CreateEventData = {
   capacity: number;
   price: number;
   imageUrl?: string;
+  imagePublicId?: string;
   status?: string;
   featured?: boolean;
 };

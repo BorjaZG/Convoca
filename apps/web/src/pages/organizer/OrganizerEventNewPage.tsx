@@ -20,6 +20,7 @@ export function OrganizerEventNewPage() {
         startDate: new Date(data.startDate).toISOString(),
         endDate: new Date(data.endDate).toISOString(),
         imageUrl: data.imageUrl || undefined,
+        imagePublicId: data.imagePublicId || undefined,
       });
       success('Evento creado correctamente');
       navigate(`/events/${event.id}`);

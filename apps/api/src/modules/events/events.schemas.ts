@@ -24,11 +24,14 @@ export const createEventSchema = z.object({
   capacity: z.number().int().positive(),
   price: z.number().min(0),
   imageUrl: z.string().url().optional(),
+  imagePublicId: z.string().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
   featured: z.boolean().default(false),
 });
 
-export const updateEventSchema = createEventSchema.partial();
+export const updateEventSchema = createEventSchema
+  .partial()
+  .extend({ status: z.enum(['DRAFT', 'PUBLISHED', 'CANCELLED']).optional() });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
