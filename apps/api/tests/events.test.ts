@@ -166,6 +166,50 @@ describe('POST /api/events', () => {
       .send({ title: 'X', capacity: -1 });
     expect(res.status).toBe(400);
   });
+
+  it('devuelve 403 si el usuario autenticado tiene rol USER', async () => {
+    const userEmail = 'test.user.events.role@convoca.test';
+    const regRes = await request(app)
+      .post('/api/auth/register')
+      .send({ email: userEmail, password: 'UserPass1', name: 'Test User Role' });
+    const userCookies = parseCookies(regRes.headers['set-cookie']);
+
+    const res = await request(app)
+      .post('/api/events')
+      .set('Cookie', userCookies)
+      .send({ title: 'Intento de USER', capacity: 10 });
+    expect(res.status).toBe(403);
+
+    const u = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (u) {
+      await prisma.refreshToken.deleteMany({ where: { userId: u.id } });
+      await prisma.user.delete({ where: { id: u.id } });
+    }
+  });
+});
+
+describe('PUT /api/events/:id', () => {
+  it('devuelve 403 si el organizador no es propietario del evento', async () => {
+    const createRes = await createEvent({ title: 'Evento Ajeno PUT' });
+    const eventId = createRes.body.data.id;
+
+    const otherEmail = 'test.other.org.put@convoca.test';
+    const otherReg = await request(app)
+      .post('/api/auth/register')
+      .send({ email: otherEmail, password: 'OtherOrg1', name: 'Other Org PUT' });
+    const otherId = otherReg.body.user.id;
+    await prisma.user.update({ where: { id: otherId }, data: { role: 'ORGANIZER' } });
+    const otherCookies = parseCookies(otherReg.headers['set-cookie']);
+
+    const res = await request(app)
+      .put(`/api/events/${eventId}`)
+      .set('Cookie', otherCookies)
+      .send({ title: 'Intento de modificación ajena' });
+    expect(res.status).toBe(403);
+
+    await prisma.refreshToken.deleteMany({ where: { userId: otherId } });
+    await prisma.user.delete({ where: { id: otherId } });
+  });
 });
 
 describe('DELETE /api/events/:id — soft delete', () => {
