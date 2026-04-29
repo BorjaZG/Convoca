@@ -63,9 +63,18 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ── Componente de reserva ─────────────────────────────────────────────────────
-function ReserveSection({ eventId, price }: { eventId: string; price: number }) {
+function ReserveSection({
+  eventId,
+  price,
+  availableCapacity,
+}: {
+  eventId: string;
+  price: number;
+  availableCapacity: number;
+}) {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const maxPerOrder = Math.min(10, availableCapacity);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -77,6 +86,15 @@ function ReserveSection({ eventId, price }: { eventId: string; price: number }) 
           Inicia sesión
         </Link>{' '}
         para reservar tu plaza.
+      </div>
+    );
+  }
+
+  if (availableCapacity <= 0) {
+    return (
+      <div className="rounded-lg border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+        <span className="block font-medium text-foreground">Aforo completo</span>
+        No quedan entradas disponibles para este evento.
       </div>
     );
   }
@@ -107,7 +125,12 @@ function ReserveSection({ eventId, price }: { eventId: string; price: number }) 
 
   return (
     <div className="space-y-3 rounded-lg border p-4">
-      <p className="text-sm font-medium">Reservar entradas</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">Reservar entradas</p>
+        <span className="text-xs text-muted-foreground">
+          {availableCapacity} {availableCapacity === 1 ? 'plaza disponible' : 'plazas disponibles'}
+        </span>
+      </div>
       <div className="flex items-center gap-3">
         <label htmlFor="qty" className="text-sm text-muted-foreground">
           Cantidad
@@ -116,9 +139,9 @@ function ReserveSection({ eventId, price }: { eventId: string; price: number }) 
           id="qty"
           type="number"
           min={1}
-          max={10}
+          max={maxPerOrder}
           value={quantity}
-          onChange={e => setQuantity(Math.max(1, Math.min(10, Number(e.target.value))))}
+          onChange={e => setQuantity(Math.max(1, Math.min(maxPerOrder, Number(e.target.value))))}
           className="w-20"
         />
         {price > 0 && (
@@ -248,7 +271,16 @@ export function EventDetailPage() {
             <div className="flex items-center gap-2.5">
               <Users className="h-4 w-4 shrink-0 text-primary" />
               <p className="text-sm">
-                Aforo: <span className="font-medium">{event.capacity} personas</span>
+                {event.availableCapacity != null ? (
+                  <>
+                    <span className="font-medium">{event.availableCapacity}</span>
+                    {' '}de{' '}
+                    <span className="font-medium">{event.capacity}</span>
+                    {' '}plazas disponibles
+                  </>
+                ) : (
+                  <>Aforo: <span className="font-medium">{event.capacity} personas</span></>
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2.5">
@@ -300,7 +332,11 @@ export function EventDetailPage() {
         <div className="space-y-4">
           {/* Caja de reserva */}
           {event.status === 'PUBLISHED' && (
-            <ReserveSection eventId={event.id} price={event.price} />
+            <ReserveSection
+              eventId={event.id}
+              price={event.price}
+              availableCapacity={event.availableCapacity ?? event.capacity}
+            />
           )}
 
           {event.status !== 'PUBLISHED' && (

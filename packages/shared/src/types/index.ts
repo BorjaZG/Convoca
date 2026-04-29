@@ -21,6 +21,7 @@ export interface SafeUser {
 export interface EventWithOrganizer extends Event {
   organizer: SafeUser;
   averageRating?: number | null;
+  availableCapacity?: number;
   _count?: {
     reservations: number;
     reviews: number;

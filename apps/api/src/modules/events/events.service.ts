@@ -79,12 +79,20 @@ export async function getEventById(id: string) {
 
   if (!event) throw new NotFoundError('Evento no encontrado');
 
-  const avgResult = await prisma.review.aggregate({
-    where: { eventId: id },
-    _avg: { rating: true },
-  });
+  const [avgResult, confirmedResult] = await prisma.$transaction([
+    prisma.review.aggregate({ where: { eventId: id }, _avg: { rating: true } }),
+    prisma.reservation.aggregate({
+      where: { eventId: id, status: ReservationStatus.CONFIRMED },
+      _sum: { quantity: true },
+    }),
+  ]);
 
-  return { ...event, averageRating: avgResult._avg.rating };
+  const confirmedQuantity = confirmedResult._sum.quantity ?? 0;
+  return {
+    ...event,
+    averageRating: avgResult._avg.rating,
+    availableCapacity: event.capacity - confirmedQuantity,
+  };
 }
 
 export async function createEvent(data: CreateEventInput, organizerId: string) {
