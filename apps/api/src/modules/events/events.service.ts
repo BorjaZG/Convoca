@@ -1,5 +1,6 @@
 import { EventStatus, Prisma, ReservationStatus, Role } from '@prisma/client';
 
+import { deleteAsset } from '../../config/cloudinary';
 import { prisma } from '../../lib/prisma';
 import { ConflictError, ForbiddenError, NotFoundError } from '../../middleware/errorHandler';
 import { paginate, paginatedResponse } from '../../utils/paginate';
@@ -108,6 +109,14 @@ export async function updateEvent(
   if (!event) throw new NotFoundError('Evento no encontrado');
   if (event.organizerId !== userId && userRole !== Role.ADMIN) throw new ForbiddenError();
 
+  if (
+    data.imagePublicId !== undefined &&
+    event.imagePublicId &&
+    data.imagePublicId !== event.imagePublicId
+  ) {
+    await deleteAsset(event.imagePublicId).catch(() => null);
+  }
+
   return prisma.event.update({
     where: { id },
     data: {
@@ -133,6 +142,7 @@ export async function deleteEvent(id: string, userId: string, userRole: Role) {
       throw new ConflictError('El evento ya está cancelado');
     await prisma.event.update({ where: { id }, data: { status: EventStatus.CANCELLED } });
   } else {
+    if (event.imagePublicId) await deleteAsset(event.imagePublicId).catch(() => null);
     await prisma.event.delete({ where: { id } });
   }
 }

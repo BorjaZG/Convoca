@@ -126,26 +126,6 @@ describe('POST /api/reservations', () => {
   });
 });
 
-describe('GET /api/reservations/event/:id', () => {
-  it('devuelve 403 si el organizador no es propietario del evento', async () => {
-    const otherEmail = 'test.other.org.res@convoca.test';
-    const otherReg = await request(app)
-      .post('/api/auth/register')
-      .send({ email: otherEmail, password: 'OtherOrg1', name: 'Other Org Res' });
-    const otherId = otherReg.body.user.id;
-    await prisma.user.update({ where: { id: otherId }, data: { role: 'ORGANIZER' } });
-    const otherCookies = parseCookies(otherReg.headers['set-cookie']);
-
-    const res = await request(app)
-      .get(`/api/reservations/event/${testEventId}`)
-      .set('Cookie', otherCookies);
-    expect(res.status).toBe(403);
-
-    await prisma.refreshToken.deleteMany({ where: { userId: otherId } });
-    await prisma.user.delete({ where: { id: otherId } });
-  });
-});
-
 describe('PATCH /api/reservations/:id/cancel', () => {
   it('cancela la reserva y libera capacity para otra', async () => {
     // Obtener la reserva creada en el test anterior

@@ -11,6 +11,7 @@ import eventsRouter from './modules/events/events.routes';
 import reservationsRouter from './modules/reservations/reservations.routes';
 import reviewsRouter from './modules/reviews/reviews.routes';
 import statsRouter from './modules/stats/stats.routes';
+import uploadRouter from './modules/upload/upload.routes';
 import usersRouter from './modules/users/users.routes';
 
 export const app = express();
@@ -31,5 +32,6 @@ app.use('/api/reservations', reservationsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/upload', uploadRouter);
 
 app.use(errorHandler);

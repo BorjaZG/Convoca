@@ -3,6 +3,7 @@ import { type Resolver, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { EventWithOrganizer } from '@convoca/shared';
+import { ImageUploader } from '@/components/common/ImageUploader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +31,7 @@ export const eventSchema = z.object({
   capacity: z.coerce.number().int().positive('Debe ser positivo'),
   price: z.coerce.number().min(0, 'No puede ser negativo'),
   imageUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  imagePublicId: z.string().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']),
   featured: z.boolean(),
 });
@@ -62,6 +64,7 @@ export function eventToFormValues(event: EventWithOrganizer): Partial<EventFormD
     capacity: event.capacity,
     price: event.price,
     imageUrl: event.imageUrl ?? '',
+    imagePublicId: event.imagePublicId ?? '',
     status: event.status as 'DRAFT' | 'PUBLISHED',
     featured: event.featured,
   };
@@ -78,6 +81,7 @@ const DEFAULT_VALUES: EventFormData = {
   capacity: 1,
   price: 0,
   imageUrl: '',
+  imagePublicId: '',
   status: 'DRAFT',
   featured: false,
 };
@@ -101,6 +105,7 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
 
   const categoryValue = watch('category');
   const statusValue = watch('status');
+  const imageUrlValue = watch('imageUrl');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -197,10 +202,17 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
           {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
         </div>
 
-        {/* Image URL */}
+        {/* Image uploader */}
         <div className="sm:col-span-2 space-y-1.5">
-          <Label htmlFor="imageUrl">URL de imagen (opcional)</Label>
-          <Input id="imageUrl" {...register('imageUrl')} placeholder="https://…" />
+          <Label>Cartel del evento (opcional)</Label>
+          <ImageUploader
+            value={imageUrlValue}
+            onChange={(url, publicId) => {
+              setValue('imageUrl', url, { shouldValidate: true });
+              setValue('imagePublicId', publicId);
+            }}
+            folder="convoca/events"
+          />
           {errors.imageUrl && <p className="text-xs text-destructive">{errors.imageUrl.message}</p>}
         </div>
 
