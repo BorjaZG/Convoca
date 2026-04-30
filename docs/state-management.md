@@ -17,7 +17,7 @@ Esto no es una máxima filosófica; es una regla operativa para evitar re-render
 | Notificaciones toast | `useReducer` + Context | `ToastContext` | Cualquier capa (incluido otro Context) puede disparar un toast sin acoplar UI al componente que lanza la acción. |
 | Valores de formulario | `react-hook-form` | Local al componente | Mutan con cada tecla; si fueran globales provocarían re-renders en toda la app. |
 | Filtros / paginación de listas | `useState` local | Local al componente de lista | Solo interesan a esa vista. No hay razón para compartirlos. |
-| Eventos, reservas, reseñas | Hooks de fetching (SWR / React Query) | Fase 3 | Son datos del servidor, tienen su propio ciclo de vida (stale, refetch, cache). Context es el mecanismo equivocado para esto. |
+| Eventos, reservas, reseñas | Hooks custom con `useFetch` | `useEvents`, `useEvent`, `useReservations`, `useStats` | Son datos del servidor, tienen su propio ciclo de vida (loading, error, refetch). Context es el mecanismo equivocado para esto. |
 
 ---
 
@@ -64,7 +64,7 @@ Los datos remotos tienen necesidades que Context no cubre:
 - **Cache compartida** entre componentes que piden el mismo recurso.
 - **Stale-while-revalidate**: mostrar datos viejos mientras llega la respuesta fresca.
 
-Implementar todo eso manualmente sobre Context es reinventar SWR o React Query. En la Fase 3 se introducirá un hook de fetching por recurso (`useEvents`, `useReservations`…) que gestiona su propio ciclo de vida.
+Implementar todo eso manualmente sobre Context es reinventar SWR o React Query. En su lugar, cada módulo tiene un hook de fetching propio (`useEvents`, `useEvent`, `useReservations`, `useStats`…) construido sobre el hook genérico `useFetch`, que gestiona su propio ciclo de vida sin depender de ninguna librería externa de cache.
 
 ---
 

@@ -4,6 +4,8 @@
 
 Cada test responde a la pregunta: _"Si esto se rompe, ¿se cae algo importante?"_. Si la respuesta es no, el test no existe. Calidad sobre cantidad.
 
+La suite actual cuenta con **116 tests** en total: 101 establecidos en la fase 5, más 15 añadidos en la fase 7 con la integración de Cloudinary (6 en backend, 9 en frontend).
+
 ---
 
 ## Qué se testea y por qué
@@ -17,8 +19,10 @@ Cada test responde a la pregunta: _"Si esto se rompe, ¿se cae algo importante?"
 | `reservations.test.ts` | 8 | Límite de capacidad, validación zod, autorización de acceso a reservas ajenas |
 | `reviews.test.ts` | 9 | Requisito de asistencia, unicidad por usuario/evento, borrado solo por autor |
 | `stats.test.ts` | 3 | Que cada rol recibe su shape específico y no se mezclan datos entre roles |
+| `upload.test.ts` | 6 | Autenticación y autorización del endpoint de firma; campos devueltos; que el API secret nunca se expone |
 
 **Por qué supertest sobre test unitario de servicios**: los bugs reales en esta API aparecen en la integración middleware → controlador → servicio → BD. Testear el servicio aislado en memoria no habría detectado el bug de `requireRole` que retornaba 403 al USER ni el soft delete condicionado a reservas CONFIRMED.
+
 
 ### Frontend (`apps/web/tests/`)
 
@@ -29,6 +33,7 @@ Cada test responde a la pregunta: _"Si esto se rompe, ¿se cae algo importante?"
 | `context/useAuth.test.tsx` | 6 | Hidratación, login, logout, hasRole — el hook que consumen todas las páginas protegidas |
 | `lib/formatters.test.ts` | 5 | `formatPrice`, `formatDate`, `formatDateRange` — usadas en múltiples componentes |
 | `components/EventCard.test.tsx` | 5 | Renderizado correcto de título, fecha, precio y enlace de detalle |
+| `components/ImageUploader.test.tsx` | 9 | Validación de tipo y tamaño, flujo de firma + upload, preview, eliminación, error de red |
 | `pages/LoginPage.test.tsx` | 2 | Que submit llama a `login()` y navega; que un error no navega |
 | `pages/EventsPage.test.tsx` | 3 | Loading→lista, EmptyState sin resultados, refetch al cambiar filtro |
 | `pages/EventDetailPage.test.tsx` | 3 | Sección de reserva: oculta si no autenticado, visible si autenticado |
