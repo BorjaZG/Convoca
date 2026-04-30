@@ -29,11 +29,23 @@ const ORGANIZER_SELECT = {
 
 const VALID_SORT_FIELDS = ['startDate', 'price', 'createdAt', 'title'] as const;
 
+function markEventAsCompletedIfNeeded<
+  T extends { id: string; status: EventStatus; endDate: Date },
+>(event: T): T {
+  if (event.status === EventStatus.PUBLISHED && event.endDate < new Date()) {
+    prisma.event
+      .update({ where: { id: event.id }, data: { status: EventStatus.COMPLETED } })
+      .catch(() => null);
+    return { ...event, status: EventStatus.COMPLETED };
+  }
+  return event;
+}
+
 export async function listEvents(filters: EventFilters) {
   const { page, limit, skip } = paginate(filters);
 
   const where: Prisma.EventWhereInput = {
-    status: EventStatus.PUBLISHED,
+    status: { in: [EventStatus.PUBLISHED, EventStatus.DRAFT] },
     ...(filters.category && { category: filters.category as Prisma.EnumCategoryFilter }),
     ...(filters.city && { city: { contains: filters.city, mode: 'insensitive' } }),
     ...(filters.q && { title: { contains: filters.q, mode: 'insensitive' } }),
@@ -65,7 +77,7 @@ export async function listEvents(filters: EventFilters) {
     prisma.event.count({ where }),
   ]);
 
-  return paginatedResponse(events, total, page, limit);
+  return paginatedResponse(events.map(markEventAsCompletedIfNeeded), total, page, limit);
 }
 
 export async function getEventById(id: string) {
@@ -79,6 +91,8 @@ export async function getEventById(id: string) {
 
   if (!event) throw new NotFoundError('Evento no encontrado');
 
+  const checkedEvent = markEventAsCompletedIfNeeded(event);
+
   const [avgResult, confirmedResult] = await prisma.$transaction([
     prisma.review.aggregate({ where: { eventId: id }, _avg: { rating: true } }),
     prisma.reservation.aggregate({
@@ -89,9 +103,9 @@ export async function getEventById(id: string) {
 
   const confirmedQuantity = confirmedResult._sum.quantity ?? 0;
   return {
-    ...event,
+    ...checkedEvent,
     averageRating: avgResult._avg.rating,
-    availableCapacity: event.capacity - confirmedQuantity,
+    availableCapacity: checkedEvent.capacity - confirmedQuantity,
   };
 }
 
@@ -167,11 +181,12 @@ export async function getPendingEvents() {
 }
 
 export async function getMyEvents(organizerId: string) {
-  return prisma.event.findMany({
+  const events = await prisma.event.findMany({
     where: { organizerId },
     orderBy: { createdAt: 'desc' },
     include: {
       _count: { select: { reservations: true, reviews: true } },
     },
   });
+  return events.map(markEventAsCompletedIfNeeded);
 }

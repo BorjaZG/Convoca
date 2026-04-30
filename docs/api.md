@@ -1,64 +1,45 @@
-# Referencia de la API — Convoca
+# API de Convoca — Referencia de endpoints
 
 Base URL: `http://localhost:4000/api`
 
-**Autenticación**: los tokens viajan en cookies httpOnly (`accessToken`, `refreshToken`). Todas las peticiones que requieren auth deben incluir `credentials: include`.
+Los tokens de autenticación van en cookies httpOnly (`accessToken` y `refreshToken`). Para que se envíen, todas las peticiones tienen que llevar `credentials: include`.
 
-**Códigos de error comunes**:
+## Códigos de error que puede devolver
 
-- `400` — validación fallida (Zod) → `{error, details}`
-- `401` — no autenticado o token inválido → `{error}`
-- `403` — rol insuficiente o recurso ajeno → `{error}`
-- `404` — recurso no encontrado → `{error}`
-- `409` — conflicto (email duplicado, capacidad insuficiente, etc.) → `{error}`
-- `500` — error interno → `{error: "Internal server error"}`
+| Código | Qué significa |
+|---|---|
+| 400 | Los datos que mandaste no pasan la validación de Zod |
+| 401 | No estás autenticado o tu token ha expirado |
+| 403 | Tu rol no tiene permisos para hacer esto |
+| 404 | Ese recurso no existe |
+| 409 | Conflicto: email ya en uso, sin capacidad, reseña duplicada... |
+| 500 | Error interno del servidor |
 
 ---
 
 ## Health
 
-| Método | Ruta      | Auth    | Descripción                           |
-| ------ | --------- | ------- | ------------------------------------- |
-| GET    | `/health` | Pública | Comprueba que el servidor está activo |
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| GET | `/health` | Pública | Comprueba que el servidor está vivo |
 
-**Respuesta 200:**
-
-```json
-{ "status": "ok", "timestamp": "2026-04-29T10:00:00.000Z" }
-```
+Respuesta: `{ "status": "ok", "timestamp": "2026-04-29T10:00:00.000Z" }`
 
 ---
 
 ## Auth — `/api/auth`
 
-| Método | Ruta        | Auth                     | Body                      | Respuesta                    |
-| ------ | ----------- | ------------------------ | ------------------------- | ---------------------------- |
-| POST   | `/register` | Pública                  | `{email, password, name}` | `{user}` + cookies           |
-| POST   | `/login`    | Pública                  | `{email, password}`       | `{user}` + cookies           |
-| POST   | `/refresh`  | Pública (cookie)         | —                         | `{message}` + nuevas cookies |
-| POST   | `/logout`   | Pública (cookie)         | —                         | `{message}` + limpia cookies |
-| GET    | `/me`       | USER · ORGANIZER · ADMIN | —                         | `{user}`                     |
+| Método | Ruta | Auth | Body | Qué hace |
+|---|---|---|---|---|
+| POST | `/register` | Pública | `{email, password, name}` | Crea usuario y devuelve cookies |
+| POST | `/login` | Pública | `{email, password}` | Loguea y devuelve cookies |
+| POST | `/refresh` | Pública (necesita cookie) | — | Rota el refresh token y da nuevas cookies |
+| POST | `/logout` | Pública (necesita cookie) | — | Revoca el refresh token y limpia cookies |
+| GET | `/me` | Cualquier autenticado | — | Devuelve los datos del usuario actual |
 
-### Body: POST /register
+**Validaciones del registro:** email válido, password mínimo 8 caracteres con al menos 1 número, name entre 2 y 50 caracteres.
 
-```json
-{
-  "email": "usuario@ejemplo.com",
-  "password": "minimo8chars1",
-  "name": "Nombre Apellido"
-}
-```
-
-Reglas: `email` válido; `password` mínimo 8 caracteres y al menos 1 dígito; `name` entre 2 y 50 caracteres.
-
-### Body: POST /login
-
-```json
-{ "email": "usuario@ejemplo.com", "password": "contraseña" }
-```
-
-### Respuesta: usuario (SafeUser)
-
+**Respuesta de usuario** (sin password, nunca):
 ```json
 {
   "user": {
@@ -67,8 +48,8 @@ Reglas: `email` válido; `password` mínimo 8 caracteres y al menos 1 dígito; `
     "name": "Nombre",
     "role": "USER",
     "avatarUrl": null,
-    "createdAt": "2026-01-01T00:00:00.000Z",
-    "updatedAt": "2026-01-01T00:00:00.000Z"
+    "createdAt": "...",
+    "updatedAt": "..."
   }
 }
 ```
@@ -77,33 +58,32 @@ Reglas: `email` válido; `password` mínimo 8 caracteres y al menos 1 dígito; `
 
 ## Events — `/api/events`
 
-| Método | Ruta       | Auth      | Roles             | Body        | Descripción                                              |
-| ------ | ---------- | --------- | ----------------- | ----------- | -------------------------------------------------------- |
-| GET    | `/`        | Pública   | —                 | —           | Lista eventos publicados con filtros y paginación        |
-| GET    | `/mine`    | Requerida | ORGANIZER · ADMIN | —           | Eventos del organizador autenticado                      |
-| GET    | `/pending` | Requerida | ADMIN             | —           | Eventos en estado DRAFT pendientes de revisión           |
-| GET    | `/:id`     | Pública   | —                 | —           | Detalle de un evento                                     |
-| POST   | `/`        | Requerida | ORGANIZER · ADMIN | CreateEvent | Crear evento                                             |
-| PUT    | `/:id`     | Requerida | ORGANIZER · ADMIN | UpdateEvent | Actualizar evento (propietario o ADMIN)                  |
-| DELETE | `/:id`     | Requerida | ORGANIZER · ADMIN | —           | Eliminar evento (o cancelar si tiene reservas CONFIRMED) |
+| Método | Ruta | Auth | Roles | Qué hace |
+|---|---|---|---|---|
+| GET | `/` | Pública | — | Lista eventos publicados con filtros y paginación |
+| GET | `/mine` | Requerida | ORGANIZER, ADMIN | Mis eventos como organizador |
+| GET | `/pending` | Requerida | ADMIN | Eventos en DRAFT pendientes de moderar |
+| GET | `/:id` | Pública | — | Detalle de un evento |
+| POST | `/` | Requerida | ORGANIZER, ADMIN | Crear evento |
+| PUT | `/:id` | Requerida | ORGANIZER, ADMIN | Editar evento (solo si eres el dueño o admin) |
+| DELETE | `/:id` | Requerida | ORGANIZER, ADMIN | Borrar evento. Si tiene reservas confirmadas hace soft delete (lo pone en CANCELLED) |
 
-### Query params: GET /events
+**Filtros de GET /events** (todos opcionales como query params):
 
-| Param       | Tipo            | Descripción                                                                                                  |
-| ----------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| `page`      | number          | Página (default: 1)                                                                                          |
-| `limit`     | number          | Resultados por página (default: 10)                                                                          |
-| `category`  | string          | Filtrar por categoría (CONCIERTO, EXPOSICION, TALLER, MERCADILLO, TEATRO, CONFERENCIA, GASTRONOMIA, DEPORTE) |
-| `city`      | string          | Filtrar por ciudad                                                                                           |
-| `q`         | string          | Búsqueda en título y descripción                                                                             |
-| `startDate` | ISO string      | Eventos desde esta fecha                                                                                     |
-| `endDate`   | ISO string      | Eventos hasta esta fecha                                                                                     |
-| `maxPrice`  | number          | Precio máximo                                                                                                |
-| `sortBy`    | string          | Campo de orden: `startDate`, `price`, `createdAt`, `title`                                                   |
-| `order`     | `asc` \| `desc` | Dirección del orden                                                                                          |
+| Param | Tipo | Para qué |
+|---|---|---|
+| `page` | number | Página (default 1) |
+| `limit` | number | Resultados por página (default 10) |
+| `category` | string | CONCIERTO, EXPOSICION, TALLER, MERCADILLO, TEATRO, CONFERENCIA, GASTRONOMIA, DEPORTE |
+| `city` | string | Filtrar por ciudad |
+| `q` | string | Busca en título y descripción |
+| `startDate` | ISO string | Eventos desde esta fecha |
+| `endDate` | ISO string | Eventos hasta esta fecha |
+| `maxPrice` | number | Precio máximo |
+| `sortBy` | string | Ordenar por: startDate, price, createdAt, title |
+| `order` | asc / desc | Dirección del orden |
 
-### Body: POST /events (CreateEvent)
-
+**Body para crear evento:**
 ```json
 {
   "title": "Festival de Jazz",
@@ -113,52 +93,18 @@ Reglas: `email` válido; `password` mínimo 8 caracteres y al menos 1 dígito; `
   "endDate": "2026-06-15T23:00:00.000Z",
   "venue": "Teatro Principal",
   "city": "Valencia",
-  "latitude": 39.4699,
-  "longitude": -0.3763,
   "capacity": 200,
   "price": 15.0,
-  "imageUrl": "https://res.cloudinary.com/...",
-  "imagePublicId": "convoca/events/abc123",
-  "status": "DRAFT",
-  "featured": false
+  "status": "DRAFT"
 }
 ```
 
-`latitude`, `longitude`, `imageUrl`, `imagePublicId` y `featured` son opcionales. `status` admite `DRAFT` o `PUBLISHED`; default `DRAFT`.
+Los campos `latitude`, `longitude`, `imageUrl`, `imagePublicId` y `featured` son opcionales.
 
-### Body: PUT /events/:id (UpdateEvent)
-
-Igual que CreateEvent pero todos los campos son opcionales. `status` además admite `CANCELLED`.
-
-### Respuesta: evento con organizador
-
+**Respuesta paginada:**
 ```json
 {
-  "id": "uuid",
-  "title": "Festival de Jazz",
-  "category": "CONCIERTO",
-  "startDate": "2026-06-15T20:00:00.000Z",
-  "endDate": "2026-06-15T23:00:00.000Z",
-  "venue": "Teatro Principal",
-  "city": "Valencia",
-  "capacity": 200,
-  "price": 15.0,
-  "status": "PUBLISHED",
-  "featured": false,
-  "averageRating": 4.2,
-  "availableCapacity": 185,
-  "organizer": { "id": "uuid", "name": "Ana García", "email": "...", "role": "ORGANIZER" },
-  "_count": { "reservations": 15, "reviews": 8 }
-}
-```
-
-### Respuesta: listado paginado
-
-```json
-{
-  "data": [
-    /* array de EventWithOrganizer */
-  ],
+  "data": [/* array de eventos */],
   "pagination": { "page": 1, "limit": 10, "total": 45, "totalPages": 5 }
 }
 ```
@@ -167,140 +113,62 @@ Igual que CreateEvent pero todos los campos son opcionales. `status` además adm
 
 ## Reservations — `/api/reservations`
 
-Todas las rutas requieren autenticación.
+Todas necesitan estar autenticado.
 
-| Método | Ruta              | Auth      | Roles                    | Body              | Descripción                                      |
-| ------ | ----------------- | --------- | ------------------------ | ----------------- | ------------------------------------------------ |
-| POST   | `/`               | Requerida | USER · ORGANIZER · ADMIN | CreateReservation | Crear reserva                                    |
-| GET    | `/me`             | Requerida | —                        | —                 | Mis reservas                                     |
-| GET    | `/event/:eventId` | Requerida | ORGANIZER · ADMIN        | —                 | Reservas de un evento (solo propietario o ADMIN) |
-| PATCH  | `/:id/cancel`     | Requerida | —                        | —                 | Cancelar una reserva                             |
+| Método | Ruta | Roles | Body | Qué hace |
+|---|---|---|---|---|
+| POST | `/` | Cualquier autenticado | `{eventId, quantity}` | Reservar entradas |
+| GET | `/me` | Cualquier autenticado | — | Mis reservas |
+| GET | `/event/:eventId` | ORGANIZER, ADMIN | — | Reservas de un evento (solo si eres el organizador o admin) |
+| PATCH | `/:id/cancel` | Cualquier autenticado | — | Cancelar mi reserva |
 
-### Body: POST /reservations
+**Filtros de GET /reservations/me:** `status` (CONFIRMED, CANCELLED, ATTENDED), `startDate`, `endDate`.
 
-```json
-{ "eventId": "uuid", "quantity": 2 }
-```
-
-El backend valida que el evento esté en estado `PUBLISHED` y que haya capacidad disponible (`capacity - reservas CONFIRMED`). Calcula `totalPrice = event.price * quantity`.
-
-### Query params: GET /reservations/me
-
-| Param       | Tipo       | Descripción                                   |
-| ----------- | ---------- | --------------------------------------------- |
-| `status`    | string     | Filtrar: `CONFIRMED`, `CANCELLED`, `ATTENDED` |
-| `startDate` | ISO string | Reservas de eventos desde esta fecha          |
-| `endDate`   | ISO string | Reservas de eventos hasta esta fecha          |
-
-### Respuesta: reserva con evento
-
-```json
-{
-  "id": "uuid",
-  "quantity": 2,
-  "totalPrice": 30.0,
-  "status": "CONFIRMED",
-  "createdAt": "2026-04-01T10:00:00.000Z",
-  "userId": "uuid",
-  "eventId": "uuid",
-  "event": {
-    "id": "uuid",
-    "title": "Festival de Jazz",
-    "startDate": "2026-06-15T20:00:00.000Z",
-    "venue": "Teatro Principal",
-    "city": "Valencia",
-    "imageUrl": "https://..."
-  }
-}
-```
+Al hacer POST, el backend comprueba que el evento esté PUBLISHED y que haya sitio disponible. Calcula `totalPrice = precio × cantidad` automáticamente.
 
 ---
 
 ## Reviews — `/api/reviews`
 
-| Método | Ruta              | Auth      | Body         | Descripción                                             |
-| ------ | ----------------- | --------- | ------------ | ------------------------------------------------------- |
-| POST   | `/`               | Requerida | CreateReview | Crear reseña (solo si la reserva tiene status ATTENDED) |
-| GET    | `/event/:eventId` | Pública   | —            | Reseñas de un evento (paginadas)                        |
-| DELETE | `/:id`            | Requerida | —            | Eliminar reseña (autor o ADMIN)                         |
+| Método | Ruta | Auth | Body | Qué hace |
+|---|---|---|---|---|
+| POST | `/` | Requerida | `{eventId, rating, comment}` | Crear reseña |
+| GET | `/event/:eventId` | Pública | — | Reseñas de un evento (paginadas) |
+| DELETE | `/:id` | Requerida | — | Borrar reseña (solo si la escribiste tú o eres admin) |
 
-### Body: POST /reviews
-
-```json
-{ "eventId": "uuid", "rating": 4, "comment": "Excelente ambiente y organización." }
-```
-
-`rating` entre 1 y 5; `comment` entre 10 y 1000 caracteres. Solo se puede crear una reseña por usuario por evento. Requiere haber asistido (reserva con status `ATTENDED`).
-
-### Query params: GET /reviews/event/:eventId
-
-| Param   | Tipo   | Descripción                         |
-| ------- | ------ | ----------------------------------- |
-| `page`  | number | Página (default: 1)                 |
-| `limit` | number | Resultados por página (default: 10) |
-
-### Respuesta: reseña con autor
-
-```json
-{
-  "data": [
-    {
-      "id": "uuid",
-      "rating": 4,
-      "comment": "Excelente ambiente.",
-      "createdAt": "2026-04-20T12:00:00.000Z",
-      "eventId": "uuid",
-      "userId": "uuid",
-      "user": { "id": "uuid", "name": "Pedro López", "avatarUrl": null }
-    }
-  ],
-  "pagination": { "page": 1, "limit": 10, "total": 3, "totalPages": 1 }
-}
-```
+**Restricciones importantes:**
+- Solo puedes reseñar un evento si tienes una reserva con estado ATTENDED
+- Solo una reseña por usuario por evento
+- Rating entre 1 y 5, comment entre 10 y 1000 caracteres
 
 ---
 
 ## Stats — `/api/stats`
 
-Todas las rutas requieren autenticación. La respuesta varía según el rol del usuario autenticado.
+| Método | Ruta | Auth | Query | Qué hace |
+|---|---|---|---|---|
+| GET | `/me` | Requerida | `startDate?`, `endDate?` | Estadísticas según tu rol |
 
-| Método | Ruta  | Auth      | Query                    | Descripción                           |
-| ------ | ----- | --------- | ------------------------ | ------------------------------------- |
-| GET    | `/me` | Requerida | `startDate?`, `endDate?` | Estadísticas según el rol del usuario |
+La gracia de este endpoint es que devuelve datos distintos según quién lo llame:
 
-### Respuesta para rol USER
-
+**Si eres USER:**
 ```json
-{
-  "totalReservations": 5,
-  "eventsAttended": 2,
-  "upcomingEvents": 3
-}
+{ "totalReservations": 5, "eventsAttended": 2, "upcomingEvents": 3 }
 ```
 
-### Respuesta para rol ORGANIZER
-
+**Si eres ORGANIZER:**
 ```json
 {
   "activeEvents": 3,
   "totalReservations": 120,
   "totalRevenue": 1800.0,
   "averageRating": 4.3,
-  "eventsByCategory": [
-    { "category": "CONCIERTO", "count": 2 },
-    { "category": "TALLER", "count": 1 }
-  ],
-  "reservationsByMonth": [
-    { "month": "2025-11", "count": 15 },
-    { "month": "2025-12", "count": 32 }
-  ]
+  "eventsByCategory": [{ "category": "CONCIERTO", "count": 2 }],
+  "reservationsByMonth": [{ "month": "2025-11", "count": 15 }]
 }
 ```
 
-`reservationsByMonth` cubre los últimos 6 meses.
-
-### Respuesta para rol ADMIN
-
+**Si eres ADMIN:**
 ```json
 {
   "totalUsers": 250,
@@ -309,24 +177,19 @@ Todas las rutas requieren autenticación. La respuesta varía según el rol del 
   "totalRevenue": 18400.0,
   "eventsByMonth": [{ "month": "2025-05", "count": 4 }],
   "categoryDistribution": [{ "category": "CONCIERTO", "count": 18 }],
-  "topOrganizers": [
-    { "id": "uuid", "name": "Ana García", "totalEvents": 8, "totalRevenue": 3200.0 }
-  ]
+  "topOrganizers": [{ "id": "uuid", "name": "Ana García", "totalEvents": 8, "totalRevenue": 3200.0 }]
 }
 ```
-
-`eventsByMonth` cubre los últimos 12 meses. `topOrganizers` devuelve los 5 primeros.
 
 ---
 
 ## Upload — `/api/upload`
 
-| Método | Ruta    | Auth      | Roles             | Descripción                                   |
-| ------ | ------- | --------- | ----------------- | --------------------------------------------- |
-| POST   | `/sign` | Requerida | ORGANIZER · ADMIN | Genera firma para subida directa a Cloudinary |
+| Método | Ruta | Auth | Roles | Qué hace |
+|---|---|---|---|---|
+| POST | `/sign` | Requerida | ORGANIZER, ADMIN | Genera una firma para subir imágenes directamente a Cloudinary |
 
-### Respuesta: firma Cloudinary
-
+**Respuesta:**
 ```json
 {
   "signature": "abc123...",
@@ -337,51 +200,22 @@ Todas las rutas requieren autenticación. La respuesta varía según el rol del 
 }
 ```
 
-El frontend usa estos datos para hacer un `POST` directamente a la API de Cloudinary (`https://api.cloudinary.com/v1_1/{cloudName}/image/upload`) sin que la `CLOUDINARY_API_SECRET` salga del servidor.
+Con estos datos el frontend sube la imagen directamente a Cloudinary (a `https://api.cloudinary.com/v1_1/{cloudName}/image/upload`). La API secret nunca sale del servidor.
 
 ---
 
 ## Users — `/api/users`
 
-Todas las rutas requieren autenticación con rol ADMIN.
+Solo para ADMIN.
 
-| Método | Ruta        | Auth      | Roles | Body     | Descripción                                            |
-| ------ | ----------- | --------- | ----- | -------- | ------------------------------------------------------ |
-| GET    | `/`         | Requerida | ADMIN | —        | Lista todos los usuarios (paginada, filtrable por rol) |
-| PATCH  | `/:id/role` | Requerida | ADMIN | `{role}` | Cambiar el rol de un usuario                           |
-| DELETE | `/:id`      | Requerida | ADMIN | —        | Eliminar usuario (no puede autoeliminarse)             |
+| Método | Ruta | Auth | Roles | Body | Qué hace |
+|---|---|---|---|---|---|
+| GET | `/` | Requerida | ADMIN | — | Lista todos los usuarios (paginada, filtrable por rol) |
+| PATCH | `/:id/role` | Requerida | ADMIN | `{role}` | Cambiar el rol de un usuario |Alumno: Borja Zorrilla Gracia
 
-### Query params: GET /users
+Módulo: Sostenibilidad aplicada al sistema productivo
 
-| Param   | Tipo   | Descripción                                   |
-| ------- | ------ | --------------------------------------------- |
-| `page`  | number | Página (default: 1)                           |
-| `limit` | number | Resultados por página                         |
-| `role`  | string | Filtrar por rol: `USER`, `ORGANIZER`, `ADMIN` |
+Centro San Valero
+| DELETE | `/:id` | Requerida | ADMIN | — | Eliminar usuario (no puede borrarse a sí mismo) |
 
-### Body: PATCH /users/:id/role
-
-```json
-{ "role": "ORGANIZER" }
-```
-
-`role` acepta `USER`, `ORGANIZER` o `ADMIN`.
-
-### Respuesta: listado paginado de usuarios
-
-```json
-{
-  "data": [
-    {
-      "id": "uuid",
-      "email": "usuario@ejemplo.com",
-      "name": "Nombre",
-      "role": "USER",
-      "avatarUrl": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z"
-    }
-  ],
-  "pagination": { "page": 1, "limit": 20, "total": 250, "totalPages": 13 }
-}
-```
+Filtros de GET: `page`, `limit`, `role` (USER, ORGANIZER, ADMIN).

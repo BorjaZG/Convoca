@@ -177,11 +177,12 @@ export function OrganizerDashboardPage() {
           <Button
             size="sm"
             variant="ghost"
+            disabled={row.original.status === 'COMPLETED'}
             onClick={() => navigate(`/organizer/events/${row.original.id}/edit`)}
           >
             Editar
           </Button>
-          {row.original.status !== 'CANCELLED' && (
+          {row.original.status !== 'CANCELLED' && row.original.status !== 'COMPLETED' && (
             <Button
               size="sm"
               variant="ghost"
