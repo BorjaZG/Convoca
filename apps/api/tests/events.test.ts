@@ -212,6 +212,38 @@ describe('PUT /api/events/:id', () => {
   });
 });
 
+describe('GET /api/events/mine — lazy completion', () => {
+  it('devuelve status COMPLETED cuando el evento ha vencido', async () => {
+    const past = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const expired = await prisma.event.create({
+      data: {
+        title: 'Evento Vencido Lazy',
+        description: 'Evento para test de lazy completion.',
+        category: 'CONCIERTO',
+        startDate: new Date(past.getTime() - 3600000),
+        endDate: past,
+        venue: 'Sala Pasada',
+        city: 'Madrid',
+        capacity: 20,
+        price: 5,
+        status: 'PUBLISHED',
+        organizerId: orgId,
+      },
+    });
+    createdEventIds.push(expired.id);
+
+    const res = await request(app).get('/api/events/mine').set('Cookie', orgCookies);
+    expect(res.status).toBe(200);
+
+    const found = res.body.data.find((ev: { id: string }) => ev.id === expired.id);
+    expect(found).toBeDefined();
+    expect(found.status).toBe('COMPLETED');
+
+    const inDb = await prisma.event.findUnique({ where: { id: expired.id } });
+    expect(inDb?.status).toBe('COMPLETED');
+  });
+});
+
 describe('DELETE /api/events/:id — soft delete', () => {
   it('hard delete cuando no hay reservas CONFIRMED', async () => {
     const createRes = await createEvent({ title: 'Evento Sin Reservas' });

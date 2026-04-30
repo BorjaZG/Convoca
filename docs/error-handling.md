@@ -1,95 +1,63 @@
 # Manejo de errores — Convoca
 
-El sistema de errores sigue un flujo end-to-end: el backend lanza errores tipados que el middleware transforma en respuestas HTTP estructuradas; el frontend los captura en un único punto y los convierte en notificaciones visuales.
+## Cómo funciona el sistema de errores de punta a punta
+
+El flujo es: el backend lanza un error tipado → el middleware `errorHandler` lo convierte en una respuesta HTTP con el código adecuado → el frontend lo captura en `api.ts` → el componente o contexto muestra un toast al usuario.
 
 ---
 
 ## Backend: errores tipados
 
-**Fichero:** `apps/api/src/middleware/errorHandler.ts`
-
-Todas las clases de error extienden `AppError`:
+En vez de hacer `res.status(404).json(...)` en cada controlador, tengo clases de error que extienden de una base `AppError`:
 
 ```typescript
 class AppError extends Error {
-  constructor(
-    public statusCode: number,
-    message: string
-  ) {
+  constructor(public statusCode: number, message: string) {
     super(message);
   }
 }
 
 class NotFoundError extends AppError {
-  constructor(message = 'Recurso no encontrado') {
-    super(404, message);
-  }
+  constructor(message = 'Recurso no encontrado') { super(404, message); }
 }
 
 class ForbiddenError extends AppError {
-  constructor(message = 'Acceso denegado') {
-    super(403, message);
-  }
+  constructor(message = 'Acceso denegado') { super(403, message); }
 }
 
 class ConflictError extends AppError {
-  constructor(message: string) {
-    super(409, message);
-  }
+  constructor(message: string) { super(409, message); }
 }
 ```
 
-Los servicios de negocio lanzan estas clases directamente:
+Los servicios simplemente lanzan estas clases cuando algo va mal:
 
 ```typescript
-// eventsService.ts
+// En eventsService.ts
 if (!event) throw new NotFoundError('Evento no encontrado');
 if (event.organizerId !== userId && userRole !== 'ADMIN') throw new ForbiddenError();
-if (confirmed > 0)
-  throw new ConflictError('No se puede eliminar un evento con reservas confirmadas');
 ```
+
+Así los controladores no se llenan de lógica de errores — solo llaman al servicio y el error burbujea hasta el middleware.
 
 ---
 
-## Backend: middleware errorHandler
+## El middleware errorHandler
 
-El middleware es el último en la cadena de Express y captura cualquier error que haya llegado a `next(err)`:
+Es el último middleware de Express. Captura todo lo que llega a `next(err)`:
 
-```typescript
-function errorHandler(err, req, res, next) {
-  // Error tipado de la aplicación
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({ error: err.message });
-  }
+- Si es un `AppError` → devuelve su statusCode y mensaje
+- Si es un `ZodError` (validación de datos) → devuelve 400 con los campos que fallaron
+- Si es cualquier otra cosa → devuelve 500 y lo loguea en consola
 
-  // Error de validación Zod
-  if (err instanceof ZodError) {
-    return res.status(400).json({
-      error: 'Datos de entrada no válidos',
-      details: err.flatten().fieldErrors,
-    });
-  }
-
-  // Error no capturado
-  console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
-}
-```
-
-**Formato de respuesta de error:**
+El formato de respuesta siempre es:
 
 ```json
-// AppError (400, 401, 403, 404, 409)
-{ "error": "Mensaje legible para el usuario" }
+// Error normal (401, 403, 404, 409)
+{ "error": "Mensaje para el usuario" }
 
-// ZodError (400)
-{
-  "error": "Datos de entrada no válidos",
-  "details": {
-    "email": ["Formato de email inválido"],
-    "password": ["Mínimo 8 caracteres"]
-  }
-}
+// Error de validación (400)
+{ "error": "Datos de entrada no válidos", "details": { "email": ["Formato inválido"] } }
 
 // Error interno (500)
 { "error": "Internal server error" }
@@ -97,104 +65,54 @@ function errorHandler(err, req, res, next) {
 
 ---
 
-## Middlewares de autorización
+## Middlewares de auth
 
-### requireAuth
+El orden en las rutas protegidas siempre es: `requireAuth → requireRole → validate → controlador`.
 
-```typescript
-// Si no hay cookie accessToken o el JWT no es válido → 401
-// Si el JWT está expirado → 401 (el frontend lo intercepta y hace refresh)
-// Si el token es válido → inyecta req.user = { id, role }
-```
+**requireAuth** lee la cookie `accessToken`, verifica el JWT y mete `req.user = { id, role }`. Si no hay cookie o el JWT está mal → 401.
 
-### requireRole
-
-```typescript
-// requireRole('ORGANIZER', 'ADMIN') → 403 si req.user.role no está en la lista
-```
-
-El orden de middlewares en las rutas protegidas es siempre:
-
-```
-requireAuth → requireRole (si aplica) → validate(schema) → controlador
-```
+**requireRole** comprueba que `req.user.role` esté en la lista de roles permitidos. Si no → 403.
 
 ---
 
-## Frontend: api.ts (fetch wrapper)
+## Frontend: cómo api.ts gestiona los errores
 
-**Fichero:** `apps/web/src/services/api.ts`
+Todo el manejo de errores HTTP del frontend pasa por `api.ts`. Es un wrapper de fetch que hace dos cosas importantes:
 
-El wrapper centraliza toda la comunicación HTTP. Su responsabilidad principal es interceptar 401 y hacer un único intento de refresh antes de propagar el error:
+1. **Auto-refresh en 401**: si una petición falla con 401, antes de rendirse intenta llamar a `/refresh` para renovar el token. Si funciona, reintenta la petición original. El usuario ni se entera. Si el refresh también falla, ahí sí propaga el error.
 
-```typescript
-async function request<T>(url: string, options: RequestInit): Promise<T> {
-  const res = await fetch(url, { ...options, credentials: 'include' });
-
-  if (res.ok) return res.json();
-
-  // Primer 401: intentar refresh automático
-  if (res.status === 401 && !options._retry) {
-    await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-    // Reintentar la petición original con la nueva cookie
-    return request(url, { ...options, _retry: true });
-  }
-
-  // Si el refresh también falla o es otro error
-  const body = await res.json().catch(() => ({ error: 'Error desconocido' }));
-  throw { error: body.error, status: res.status };
-}
-
-export const api = {
-  get: <T>(url: string) => request<T>(url, { method: 'GET' }),
-  post: <T>(url: string, body: unknown) =>
-    request<T>(url, { method: 'POST', body: JSON.stringify(body) }),
-  put: <T>(url: string, body: unknown) =>
-    request<T>(url, { method: 'PUT', body: JSON.stringify(body) }),
-  patch: <T>(url: string, body: unknown) =>
-    request<T>(url, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(url: string) => request<T>(url, { method: 'DELETE' }),
-};
-```
-
-Los errores que lanza `api` tienen siempre la forma `{ error: string, status: number }`. Esto permite discriminarlos de errores JavaScript inesperados mediante un type guard:
-
-```typescript
-function isApiError(err: unknown): err is { error: string; status: number } {
-  return typeof err === 'object' && err !== null && 'error' in err && 'status' in err;
-}
-```
+2. **Errores tipados**: cuando algo falla, `api.ts` lanza un objeto `{ error: string, status: number }` en vez de un Error genérico. Así el código que lo consume puede diferenciar un 403 de un 500.
 
 ---
 
-## Frontend: propagación de errores hasta el usuario
+## Cómo llega el error hasta el usuario
 
-El flujo completo desde un servicio hasta el toast:
+El camino completo:
 
 ```
 eventsService.create(data)
   → api.post('/api/events', data)
-    → fetch falla (ej. 409 ConflictError)
-      → api lanza { error: "No hay capacidad disponible", status: 409 }
-        → eventsService relanza el error
-          → componente lo captura en try/catch
-            → toast.error(err.error) → ToastContext muestra el toast
+    → fetch falla con 409
+      → api.ts lanza { error: "No hay capacidad", status: 409 }
+        → el componente lo captura en try/catch
+          → toast.error("No hay capacidad")
 ```
 
-En la práctica, los contextos (`AuthContext`) manejan el error y llaman a `toast.error` internamente, por lo que la mayoría de las páginas solo necesitan:
+En la práctica, muchos errores los gestiona `AuthContext` directamente. Por ejemplo, si falla el login:
 
 ```typescript
 try {
   await login(email, password);
   navigate('/');
 } catch {
-  // El AuthContext ya ha mostrado el toast de error; solo necesitamos no navegar
+  // AuthContext ya ha mostrado el toast de error por dentro
+  // Aquí solo necesito no navegar
 }
 ```
 
 ---
 
-## Flujo completo: ejemplo con 401 auto-refresh
+## Diagrama del flujo de auto-refresh
 
 ```mermaid
 sequenceDiagram
@@ -211,22 +129,21 @@ sequenceDiagram
     BE-->>API: 200 + nuevas cookies
     API->>BE: GET /api/events (nuevo accessToken)
     BE-->>API: 200 {data: [...]}
-    API-->>SVC: EventWithOrganizer[]
+    API-->>SVC: datos
     SVC-->>C: datos
-    C->>C: setEvents(data)
 ```
 
-Si el refresh devuelve también un 401 (token revocado o expirado), `api.ts` propaga el error. El hook o componente lo captura y, en el caso de `AuthContext`, despacha `LOGOUT` y redirige a `/login`.
+Si el refresh también devuelve 401 (token revocado o expirado), el error se propaga y `AuthContext` despacha LOGOUT y redirige a `/login`.
 
 ---
 
-## Resumen de códigos HTTP y su origen
+## Resumen de códigos y de dónde vienen
 
-| Código | Origen en backend                                              | Qué significa para el usuario                             |
-| ------ | -------------------------------------------------------------- | --------------------------------------------------------- |
-| 400    | `validate(ZodSchema)` falla                                    | Los datos enviados no tienen el formato correcto          |
-| 401    | `requireAuth` — token ausente, inválido o expirado             | La sesión ha caducado → el frontend reintenta con refresh |
-| 403    | `requireRole` — rol insuficiente; `ForbiddenError` en servicio | No tiene permisos para esta acción                        |
-| 404    | `NotFoundError` en servicio                                    | El recurso solicitado no existe                           |
-| 409    | `ConflictError` en servicio                                    | Conflicto de datos (email en uso, sin capacidad, etc.)    |
-| 500    | Error no capturado por los anteriores                          | Error interno; se registra en consola del servidor        |
+| Código | Quién lo lanza | Qué significa para el usuario |
+|---|---|---|
+| 400 | `validate(ZodSchema)` | Los datos que mandaste están mal |
+| 401 | `requireAuth` | Tu sesión ha caducado (el frontend intenta renovarla antes de molestarte) |
+| 403 | `requireRole` o `ForbiddenError` | No tienes permisos para esto |
+| 404 | `NotFoundError` | Eso que buscas no existe |
+| 409 | `ConflictError` | Conflicto: email en uso, sin capacidad, reseña duplicada... |
+| 500 | Error no capturado | Algo ha ido mal por dentro, se loguea en servidor |

@@ -1,8 +1,10 @@
 # Arquitectura — Convoca
 
-## Visión general
+## Qué es Convoca a nivel técnico
 
-Convoca es un monorepo pnpm con tres paquetes: una API REST (`apps/api`), una SPA (`apps/web`) y tipos compartidos (`packages/shared`). No hay servidor de renderizado; el frontend es completamente estático y se comunica con el backend exclusivamente mediante HTTP.
+Es un monorepo con pnpm que tiene tres paquetes: la API REST (`apps/api`), el frontend SPA (`apps/web`) y un paquete de tipos compartidos (`packages/shared`). El frontend es completamente estático — no hay SSR ni nada de eso — y habla con el backend solo por HTTP.
+
+La idea de usar monorepo es sencilla: frontend y backend comparten tipos (roles, categorías, estados de eventos, etc.) y sin monorepo tendría que duplicarlos o montar un paquete npm privado, que para un proyecto de este tamaño es pasarse.
 
 ---
 
@@ -50,6 +52,10 @@ graph TB
     CTRL --> ERR
 ```
 
+Básicamente el flujo va así: el componente React usa un hook → el hook llama a un servicio → el servicio usa `api.ts` (que es un wrapper de fetch) → llega al backend → pasa por los middlewares → llega al controlador → el controlador llama al servicio de negocio → el servicio usa Prisma para hablar con PostgreSQL.
+
+Ningún componente hace `fetch` directamente. Todo pasa por la capa de servicios.
+
 ---
 
 ## Estructura del monorepo
@@ -67,7 +73,7 @@ convoca/
 │   │       ├── controllers/    # Un fichero por módulo
 │   │       ├── middleware/     # requireAuth, requireRole, validate, errorHandler
 │   │       ├── routes/         # Un fichero por módulo + index.ts
-│   │       ├── services/       # Lógica de negocio desacoplada del transporte HTTP
+│   │       ├── services/       # Lógica de negocio separada del HTTP
 │   │       └── index.ts        # Punto de entrada
 │   └── web/                    # Frontend SPA
 │       └── src/
@@ -87,6 +93,8 @@ convoca/
 ---
 
 ## Flujo de autenticación
+
+Este es probablemente el flujo más complejo de la app, así que lo explico con un diagrama de secuencia:
 
 ```mermaid
 sequenceDiagram
@@ -123,55 +131,39 @@ sequenceDiagram
     W->>W: dispatch LOGOUT → redirigir a /login
 ```
 
-**Por qué cookies httpOnly y no localStorage**: las cookies httpOnly son inaccesibles desde JavaScript, lo que elimina el vector de robo de tokens mediante XSS. El backend las gestiona con `Set-Cookie` y el navegador las adjunta automáticamente en cada petición con `credentials: include`. El coste es que hay que gestionar CSRF, mitigado con `sameSite: lax`.
+Lo importante aquí: cuando el accessToken caduca (15 minutos), el frontend no le pide al usuario que vuelva a loguearse. Lo que hace `api.ts` es interceptar el 401, llamar a `/refresh` por detrás, y reintentar la petición original con el nuevo token. El usuario ni se entera. Si el refresh token también ha caducado (7 días) o está revocado, ahí sí se cierra sesión.
 
 ---
 
-## Decisiones arquitectónicas clave
+## Decisiones técnicas y por qué las tomé
 
-### 1. Monorepo con pnpm workspaces
+### Cookies httpOnly en vez de localStorage
 
-**Problema**: el frontend y el backend comparten un conjunto de tipos (roles, categorías, estados de entidades, respuestas paginadas). Sin monorepo, habría que duplicarlos o publicar un paquete npm privado.
+Los JWT en localStorage se pueden leer desde cualquier script que corra en la página (incluyendo scripts de terceros). Con cookies httpOnly el JavaScript no puede acceder al token. El navegador las manda automáticamente con `credentials: include` y listo.
 
-**Decisión**: monorepo con tres paquetes en `pnpm-workspace.yaml`. El paquete `@convoca/shared` se importa directamente sin publish; pnpm resuelve la dependencia local con un symlink.
+El coste es que hay que configurar CORS con `credentials: true` y `sameSite: lax`, pero me parece un precio razonable por la seguridad que ganas.
 
-**Alternativa descartada**: repositorios separados. Requeriría sincronizar manualmente los tipos o usar contratos OpenAPI, añadiendo fricción sin beneficio real a esta escala.
+### Context API + useReducer en vez de Redux
 
-### 2. Cookies httpOnly en lugar de localStorage para los tokens
+El estado global de Convoca se reduce a tres cosas: sesión del usuario, tema visual y toasts. Montar Redux para eso me parecía desproporcionado — mucho boilerplate (actions, reducers, selectors, store, middleware) para un problema que se resuelve con tres contextos de React.
 
-**Problema**: los tokens JWT en localStorage son legibles por cualquier script de la página, incluyendo scripts de terceros inyectados.
+Si en el futuro creciera mucho (más de 5-6 contextos con interacciones entre ellos), migraría a Zustand, que es más ligero que Redux. Pero por ahora Context basta.
 
-**Decisión**: `accessToken` y `refreshToken` viajan en cookies httpOnly con `sameSite: lax`. El backend los emite con `Set-Cookie`; el frontend nunca los lee directamente.
+### Servicios separados de componentes
 
-**Coste asumido**: CORS requiere `credentials: true` tanto en el servidor como en cada `fetch`. El atributo `sameSite: lax` mitiga CSRF para formularios cross-origin (el caso más común), aunque no protege completamente contra peticiones GET cross-origin con side effects.
+Si un componente llama directamente a `fetch`, es muy difícil de testear y la lógica de construir URLs queda repartida por todas partes. Prefiero tener un servicio por módulo (`eventsService`, `reservationsService`...) que encapsule las llamadas. Así los componentes solo llaman a funciones con nombres claros y en los tests mockeo el servicio entero con `vi.mock`.
 
-### 3. Context API + useReducer en lugar de Redux o Zustand
+### Firma server-side para Cloudinary
 
-**Problema**: el estado global se limita a tres dominios independientes: sesión, tema y toasts. Redux añadiría boilerplate (reducers, actions creators, selectors, middleware) desproporcionado al tamaño del problema.
+Cuando un organizador sube un cartel, el frontend NO tiene la API secret de Cloudinary. El flujo es: el frontend pide una firma al backend → el backend firma con el secret → el frontend sube directamente a Cloudinary con esa firma. Así el secret nunca sale del servidor y nadie puede hacer subidas no autorizadas inspeccionando el código del frontend.
 
-**Decisión**: tres contextos separados con `useReducer`/`useState`. Cada consumidor solo se re-renderiza cuando cambia su contexto específico. Sin dependencias externas de gestión de estado.
+### Monorepo con pnpm
 
-**Cuándo reconsiderar**: si el número de contextos crece por encima de cinco con interacciones cruzadas frecuentes, la migración a Zustand es directa porque la API de los hooks (`useAuth`, `useToast`, `useTheme`) no cambia para los consumidores.
-
-### 4. Servicios separados de componentes (frontend)
-
-**Problema**: si los componentes llaman directamente a `fetch`, son imposibles de testear sin mockear el DOM de red, y la lógica de construcción de URLs queda dispersa.
-
-**Decisión**: cada módulo tiene su propio service (`eventsService`, `reservationsService`, etc.) que encapsula las llamadas HTTP. Los componentes y hooks los consumen. En tests, se mockea el módulo de servicio completo con `vi.mock`.
-
-**Resultado**: `EventDetailPage.test.tsx` puede testear el comportamiento de la página sin red real, solo mockeando `eventsService.getById`.
-
-### 5. Firma server-side para subidas a Cloudinary
-
-**Problema**: si el frontend tuviera la `CLOUDINARY_API_SECRET`, cualquiera podría hacer subidas no autorizadas inspeccionando el código o el tráfico de red.
-
-**Decisión**: el frontend nunca ve la API secret. El endpoint `POST /api/upload/sign` (solo para ORGANIZER y ADMIN) genera una firma HMAC con timestamp que Cloudinary valida en la subida. La firma caduca al no tener una ventana de tiempo rígida, pero el timestamp es verificado por Cloudinary.
-
-**Flujo**: frontend solicita firma → backend firma con secret → frontend sube directamente a Cloudinary usando la firma → Cloudinary valida y almacena → frontend guarda la URL pública resultante junto al evento.
+La alternativa era tener dos repos separados. El problema con eso es que los tipos (Role, Category, EventStatus, etc.) se comparten entre cliente y servidor. Con monorepo, el paquete `@convoca/shared` se importa directamente y pnpm lo enlaza con un symlink. Si cambio un tipo, TypeScript me avisa en los dos lados a la vez.
 
 ---
 
-## Modelos de datos (Prisma)
+## Modelo de datos
 
 ```mermaid
 erDiagram
@@ -199,8 +191,6 @@ erDiagram
         DateTime endDate
         String venue
         String city
-        Float latitude
-        Float longitude
         Int capacity
         Float price
         String imageUrl
@@ -233,24 +223,26 @@ erDiagram
     Event ||--o{ Review : "recibe"
 ```
 
+Las relaciones son bastante directas: un usuario puede organizar eventos (si es ORGANIZER), hacer reservas y escribir reseñas. Un evento tiene reservas y reseñas. La única restricción interesante es que un usuario solo puede dejar una reseña por evento (constraint `@@unique([userId, eventId])` en Prisma) y solo si tiene una reserva con estado ATTENDED.
+
 ---
 
-## Stack completo
+## Stack
 
-| Capa                | Tecnología                           | Versión    |
-| ------------------- | ------------------------------------ | ---------- |
-| Runtime             | Node.js                              | 20 LTS     |
-| Framework API       | Express                              | 4.x        |
-| ORM                 | Prisma                               | 5.x        |
-| Base de datos       | PostgreSQL                           | 16         |
-| Validación          | Zod                                  | 3.x        |
-| Autenticación       | jsonwebtoken + bcryptjs              | —          |
-| Imágenes            | Cloudinary SDK                       | 2.x        |
-| Framework web       | Vite + React                         | 5.x + 18.x |
-| Lenguaje            | TypeScript                           | 5.x        |
-| Estilos             | Tailwind CSS + shadcn/ui             | 3.x        |
-| Formularios         | react-hook-form                      | 7.x        |
-| Gráficos            | Recharts                             | 2.x        |
-| Iconos              | lucide-react                         | —          |
-| Testing             | Vitest + Supertest + Testing Library | —          |
-| Gestión de paquetes | pnpm workspaces                      | 9.x        |
+| Capa | Tecnología | Versión |
+|---|---|---|
+| Runtime | Node.js | 20 LTS |
+| Framework API | Express | 4.x |
+| ORM | Prisma | 5.x |
+| Base de datos | PostgreSQL | 16 |
+| Validación | Zod | 3.x |
+| Auth | jsonwebtoken + bcryptjs | — |
+| Imágenes | Cloudinary SDK | 2.x |
+| Frontend | Vite + React | 5.x + 18.x |
+| Lenguaje | TypeScript | 5.x |
+| Estilos | Tailwind CSS + shadcn/ui | 3.x |
+| Formularios | react-hook-form | 7.x |
+| Gráficos | Recharts | 2.x |
+| Iconos | lucide-react | — |
+| Testing | Vitest + Supertest + Testing Library | — |
+| Paquetes | pnpm workspaces | 9.x |
