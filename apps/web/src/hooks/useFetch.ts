@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ApiError } from '@/services/api';
 
 export function useFetch<T>(
-  fn: (signal: AbortSignal) => Promise<T>,
+  fn: () => Promise<T>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deps: any[] = []
 ): { data: T | null; loading: boolean; error: ApiError | null; refetch: () => void } {
@@ -15,25 +15,26 @@ export function useFetch<T>(
   fnRef.current = fn;
 
   useEffect(() => {
-    const controller = new AbortController();
+    let active = true;
 
     setLoading(true);
     setError(null);
 
-    fnRef.current(controller.signal)
+    fnRef.current()
       .then(result => {
+        if (!active) return;
         setData(result);
         setLoading(false);
       })
       .catch((err: unknown) => {
-        if ((err as DOMException)?.name === 'AbortError') return;
+        if (!active) return;
         setError(err as ApiError);
         setData(null);
         setLoading(false);
       });
 
     return () => {
-      controller.abort();
+      active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, ...deps]);
