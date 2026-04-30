@@ -8,16 +8,16 @@ Monorepo pnpm con backend REST (Node + Express + Prisma + PostgreSQL) y frontend
 
 ## Stack
 
-| Capa | Tecnología |
-|---|---|
-| API | Node 20 · Express 4 · TypeScript · Prisma · PostgreSQL 16 |
-| Web | Vite · React 18 · TypeScript · Tailwind CSS · shadcn/ui |
-| Auth | JWT en cookies httpOnly · bcryptjs · refresh tokens en BD |
-| Imágenes | Cloudinary (firma server-side, subida directa desde cliente) |
-| Validación | Zod (backend y frontend) · react-hook-form |
-| Gráficos | Recharts |
-| Testing | Vitest · Supertest · Testing Library (116 tests) |
-| Shared | `@convoca/shared` — tipos TypeScript compartidos |
+| Capa       | Tecnología                                                   |
+| ---------- | ------------------------------------------------------------ |
+| API        | Node 20 · Express 4 · TypeScript · Prisma · PostgreSQL 16    |
+| Web        | Vite · React 18 · TypeScript · Tailwind CSS · shadcn/ui      |
+| Auth       | JWT en cookies httpOnly · bcryptjs · refresh tokens en BD    |
+| Imágenes   | Cloudinary (firma server-side, subida directa desde cliente) |
+| Validación | Zod (backend y frontend) · react-hook-form                   |
+| Gráficos   | Recharts                                                     |
+| Testing    | Vitest · Supertest · Testing Library (116 tests)             |
+| Shared     | `@convoca/shared` — tipos TypeScript compartidos             |
 
 ---
 
@@ -90,13 +90,13 @@ pnpm dev
 
 ## Scripts disponibles
 
-| Script | Descripción |
-|---|---|
-| `pnpm dev` | Levanta API y Web en paralelo (watch mode) |
-| `pnpm build` | Compila API y Web |
-| `pnpm test` | Ejecuta los 116 tests del monorepo |
-| `pnpm lint` | ESLint en todos los paquetes |
-| `pnpm format` | Prettier en todos los ficheros |
+| Script        | Descripción                                |
+| ------------- | ------------------------------------------ |
+| `pnpm dev`    | Levanta API y Web en paralelo (watch mode) |
+| `pnpm build`  | Compila API y Web                          |
+| `pnpm test`   | Ejecuta los 116 tests del monorepo         |
+| `pnpm lint`   | ESLint en todos los paquetes               |
+| `pnpm format` | Prettier en todos los ficheros             |
 
 ---
 
@@ -123,12 +123,12 @@ pnpm --filter web test
 
 La carpeta [`/docs`](docs/) contiene la documentación completa del proyecto:
 
-| Documento | Contenido |
-|---|---|
-| [architecture.md](docs/architecture.md) | Diagrama de capas, flujo de auth, modelos de datos, decisiones arquitectónicas |
-| [api.md](docs/api.md) | Referencia completa de todos los endpoints |
-| [error-handling.md](docs/error-handling.md) | Errores tipados, middleware, interceptor de 401, toasts automáticos |
-| [state-management.md](docs/state-management.md) | Estrategia de estado: contextos, hooks de fetching, criterios de decisión |
-| [testing-strategy.md](docs/testing-strategy.md) | Qué se testea y por qué, patrones, cómo añadir tests |
-| [deployment.md](docs/deployment.md) | Setup local completo; sección de despliegue en la nube pendiente (fase 9) |
-| [ai-usage.md](docs/ai-usage.md) | Uso de IA durante el desarrollo (para completar antes de la defensa) |
+| Documento                                       | Contenido                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| [architecture.md](docs/architecture.md)         | Diagrama de capas, flujo de auth, modelos de datos, decisiones arquitectónicas |
+| [api.md](docs/api.md)                           | Referencia completa de todos los endpoints                                     |
+| [error-handling.md](docs/error-handling.md)     | Errores tipados, middleware, interceptor de 401, toasts automáticos            |
+| [state-management.md](docs/state-management.md) | Estrategia de estado: contextos, hooks de fetching, criterios de decisión      |
+| [testing-strategy.md](docs/testing-strategy.md) | Qué se testea y por qué, patrones, cómo añadir tests                           |
+| [deployment.md](docs/deployment.md)             | Setup local completo; sección de despliegue en la nube pendiente (fase 9)      |
+| [ai-usage.md](docs/ai-usage.md)                 | Uso de IA durante el desarrollo (para completar antes de la defensa)           |

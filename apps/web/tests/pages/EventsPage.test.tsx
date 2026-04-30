@@ -60,9 +60,7 @@ describe('EventsPage', () => {
   it('muestra EmptyState cuando no hay resultados', async () => {
     vi.mocked(eventsService.list).mockResolvedValue(emptyPage);
     setup();
-    await waitFor(() =>
-      expect(screen.getByText('No se encontraron eventos')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('No se encontraron eventos')).toBeInTheDocument());
   });
 
   it('cambiar filtro de categoría vuelve a llamar al servicio con el nuevo valor', async () => {

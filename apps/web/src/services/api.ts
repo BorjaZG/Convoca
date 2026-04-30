@@ -29,7 +29,10 @@ async function execute<T>(endpoint: string, options: RequestInit, retry: boolean
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: 'Error desconocido' }));
-    const err: ApiError = { error: (body as { error?: string }).error ?? 'Error desconocido', status: res.status };
+    const err: ApiError = {
+      error: (body as { error?: string }).error ?? 'Error desconocido',
+      status: res.status,
+    };
     throw err;
   }
 

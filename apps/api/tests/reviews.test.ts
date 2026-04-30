@@ -107,8 +107,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await prisma.review.deleteMany({ where: { eventId: { in: [attendedEventId, nonAttendedEventId] } } });
-  await prisma.reservation.deleteMany({ where: { eventId: { in: [attendedEventId, nonAttendedEventId] } } });
+  await prisma.review.deleteMany({
+    where: { eventId: { in: [attendedEventId, nonAttendedEventId] } },
+  });
+  await prisma.reservation.deleteMany({
+    where: { eventId: { in: [attendedEventId, nonAttendedEventId] } },
+  });
   await prisma.event.deleteMany({ where: { id: { in: [attendedEventId, nonAttendedEventId] } } });
   for (const email of [ORG_EMAIL, USER_EMAIL]) {
     const u = await prisma.user.findUnique({ where: { email } });
@@ -122,27 +126,21 @@ afterAll(async () => {
 
 describe('POST /api/reviews', () => {
   it('devuelve 403 si el usuario no ha asistido al evento', async () => {
-    const res = await request(app)
-      .post('/api/reviews')
-      .set('Cookie', userCookies)
-      .send({
-        eventId: nonAttendedEventId,
-        rating: 4,
-        comment: 'Comentario de prueba para evento sin asistencia.',
-      });
+    const res = await request(app).post('/api/reviews').set('Cookie', userCookies).send({
+      eventId: nonAttendedEventId,
+      rating: 4,
+      comment: 'Comentario de prueba para evento sin asistencia.',
+    });
 
     expect(res.status).toBe(403);
   });
 
   it('crea reseña correctamente con reserva ATTENDED y devuelve 201', async () => {
-    const res = await request(app)
-      .post('/api/reviews')
-      .set('Cookie', userCookies)
-      .send({
-        eventId: attendedEventId,
-        rating: 5,
-        comment: 'Evento increíble, repetiría sin dudarlo. Gran organización y ambiente.',
-      });
+    const res = await request(app).post('/api/reviews').set('Cookie', userCookies).send({
+      eventId: attendedEventId,
+      rating: 5,
+      comment: 'Evento increíble, repetiría sin dudarlo. Gran organización y ambiente.',
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.data.rating).toBe(5);
@@ -151,14 +149,11 @@ describe('POST /api/reviews', () => {
   });
 
   it('devuelve 409 al intentar publicar una segunda reseña para el mismo evento', async () => {
-    const res = await request(app)
-      .post('/api/reviews')
-      .set('Cookie', userCookies)
-      .send({
-        eventId: attendedEventId,
-        rating: 3,
-        comment: 'Segundo intento de reseña para el mismo evento — debe fallar.',
-      });
+    const res = await request(app).post('/api/reviews').set('Cookie', userCookies).send({
+      eventId: attendedEventId,
+      rating: 3,
+      comment: 'Segundo intento de reseña para el mismo evento — debe fallar.',
+    });
 
     expect(res.status).toBe(409);
   });
@@ -206,7 +201,13 @@ describe('DELETE /api/reviews/:id', () => {
       },
     });
     await prisma.reservation.create({
-      data: { eventId: attendedEventId, userId: anotherUser.id, quantity: 1, totalPrice: 10, status: 'ATTENDED' },
+      data: {
+        eventId: attendedEventId,
+        userId: anotherUser.id,
+        quantity: 1,
+        totalPrice: 10,
+        status: 'ATTENDED',
+      },
     });
     const review = await prisma.review.create({
       data: {
@@ -237,17 +238,20 @@ describe('DELETE /api/reviews/:id', () => {
     const authorCookies = parseCookies(authorReg.headers['set-cookie']);
 
     await prisma.reservation.create({
-      data: { eventId: attendedEventId, userId: authorId, quantity: 1, totalPrice: 10, status: 'ATTENDED' },
+      data: {
+        eventId: attendedEventId,
+        userId: authorId,
+        quantity: 1,
+        totalPrice: 10,
+        status: 'ATTENDED',
+      },
     });
 
-    const reviewRes = await request(app)
-      .post('/api/reviews')
-      .set('Cookie', authorCookies)
-      .send({
-        eventId: attendedEventId,
-        rating: 3,
-        comment: 'Reseña propia que el autor va a eliminar en este test.',
-      });
+    const reviewRes = await request(app).post('/api/reviews').set('Cookie', authorCookies).send({
+      eventId: attendedEventId,
+      rating: 3,
+      comment: 'Reseña propia que el autor va a eliminar en este test.',
+    });
     expect(reviewRes.status).toBe(201);
 
     const deleteRes = await request(app)

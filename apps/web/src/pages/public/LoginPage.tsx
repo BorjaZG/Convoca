@@ -74,7 +74,11 @@ export function LoginPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || status === 'loading'}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || status === 'loading'}
+            >
               {isSubmitting ? 'Entrando…' : 'Entrar'}
             </Button>
 

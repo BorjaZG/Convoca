@@ -55,7 +55,9 @@ export async function getMyReservations(userId: string, filters: ReservationFilt
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      event: { select: { id: true, title: true, startDate: true, venue: true, city: true, imageUrl: true } },
+      event: {
+        select: { id: true, title: true, startDate: true, venue: true, city: true, imageUrl: true },
+      },
     },
   });
 }

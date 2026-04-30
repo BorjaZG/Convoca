@@ -17,7 +17,7 @@ describe('authReducer', () => {
   it('AUTH_START: activa loading y limpia el error previo', () => {
     const next = authReducer(
       { status: 'unauthenticated', user: null, error: 'error previo' },
-      { type: 'AUTH_START' },
+      { type: 'AUTH_START' }
     );
     expect(next.status).toBe('loading');
     expect(next.error).toBeNull();
@@ -27,7 +27,7 @@ describe('authReducer', () => {
   it('AUTH_START: preserva el usuario en memoria mientras recarga', () => {
     const next = authReducer(
       { status: 'authenticated', user, error: null },
-      { type: 'AUTH_START' },
+      { type: 'AUTH_START' }
     );
     expect(next.status).toBe('loading');
     expect(next.user).toBe(user);
@@ -50,7 +50,7 @@ describe('authReducer', () => {
   it('AUTH_FAILURE: limpia el usuario autenticado previo', () => {
     const next = authReducer(
       { status: 'authenticated', user, error: null },
-      { type: 'AUTH_FAILURE', payload: 'Token expirado' },
+      { type: 'AUTH_FAILURE', payload: 'Token expirado' }
     );
     expect(next.user).toBeNull();
     expect(next.status).toBe('unauthenticated');

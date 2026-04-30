@@ -46,14 +46,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user } = useAuth();
 
   const navItems =
-    user?.role === 'ADMIN'
-      ? ADMIN_NAV
-      : user?.role === 'ORGANIZER'
-        ? ORGANIZER_NAV
-        : USER_NAV;
+    user?.role === 'ADMIN' ? ADMIN_NAV : user?.role === 'ORGANIZER' ? ORGANIZER_NAV : USER_NAV;
 
   const roleLabel =
-    user?.role === 'ADMIN' ? 'Administrador' : user?.role === 'ORGANIZER' ? 'Organizador' : 'Usuario';
+    user?.role === 'ADMIN'
+      ? 'Administrador'
+      : user?.role === 'ORGANIZER'
+        ? 'Organizador'
+        : 'Usuario';
 
   const roleIcon =
     user?.role === 'ADMIN' ? ShieldCheck : user?.role === 'ORGANIZER' ? BarChart3 : Ticket;

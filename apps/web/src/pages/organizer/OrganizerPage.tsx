@@ -11,28 +11,28 @@ import { eventsService } from '@/services/eventsService';
 import { cn } from '@/lib/utils';
 
 const STATUS_STYLES: Record<EventStatus, string> = {
-  DRAFT:     'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
+  DRAFT: 'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
   PUBLISHED: 'bg-green-100  text-green-700  dark:bg-green-900/40  dark:text-green-300',
   CANCELLED: 'bg-red-100    text-red-700    dark:bg-red-900/40    dark:text-red-300',
   COMPLETED: 'bg-blue-100   text-blue-700   dark:bg-blue-900/40   dark:text-blue-300',
 };
 
 const STATUS_LABELS: Record<EventStatus, string> = {
-  DRAFT:     'Borrador',
+  DRAFT: 'Borrador',
   PUBLISHED: 'Publicado',
   CANCELLED: 'Cancelado',
   COMPLETED: 'Completado',
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  CONCIERTO:   'Concierto',
-  EXPOSICION:  'Exposición',
-  TALLER:      'Taller',
-  MERCADILLO:  'Mercadillo',
-  TEATRO:      'Teatro',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
   CONFERENCIA: 'Conferencia',
   GASTRONOMIA: 'Gastronomía',
-  DEPORTE:     'Deporte',
+  DEPORTE: 'Deporte',
 };
 
 function formatDate(date: string | Date) {
@@ -58,9 +58,7 @@ function EventRow({ event }: { event: EventWithOrganizer }) {
           >
             {STATUS_LABELS[event.status]}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {CATEGORY_LABELS[event.category]}
-          </span>
+          <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[event.category]}</span>
         </div>
 
         <p className="truncate font-medium">{event.title}</p>
@@ -96,9 +94,12 @@ function EventRow({ event }: { event: EventWithOrganizer }) {
 }
 
 export function OrganizerPage() {
-  const { data: events, loading, error, refetch } = useFetch<EventWithOrganizer[]>(
-    () => eventsService.mine()
-  );
+  const {
+    data: events,
+    loading,
+    error,
+    refetch,
+  } = useFetch<EventWithOrganizer[]>(() => eventsService.mine());
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">

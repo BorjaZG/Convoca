@@ -91,6 +91,7 @@ export interface Event {
   capacity: number;
   price: number;
   imageUrl?: string;
+  imagePublicId?: string;
   status: EventStatus;
   featured: boolean;
   organizerId: string;

@@ -35,7 +35,9 @@ export function OrganizerEventNewPage() {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Nuevo evento</h1>
-        <p className="text-sm text-muted-foreground">Rellena los datos para crear un nuevo evento</p>
+        <p className="text-sm text-muted-foreground">
+          Rellena los datos para crear un nuevo evento
+        </p>
       </div>
       <Card className="max-w-3xl">
         <CardHeader>

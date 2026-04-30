@@ -4,11 +4,11 @@
 
 ### Requisitos previos
 
-| Herramienta | Versión mínima | Para qué |
-|---|---|---|
-| Node.js | 20 LTS | Ejecutar API y Web |
-| pnpm | 9.x | Gestión de dependencias del monorepo |
-| Docker + Docker Compose | Cualquier versión reciente | Levantar PostgreSQL en local |
+| Herramienta             | Versión mínima             | Para qué                             |
+| ----------------------- | -------------------------- | ------------------------------------ |
+| Node.js                 | 20 LTS                     | Ejecutar API y Web                   |
+| pnpm                    | 9.x                        | Gestión de dependencias del monorepo |
+| Docker + Docker Compose | Cualquier versión reciente | Levantar PostgreSQL en local         |
 
 Comprueba que están disponibles:
 
@@ -40,12 +40,12 @@ docker compose up -d
 
 Esto arranca un contenedor con PostgreSQL 16 en el puerto `5432`. Las credenciales están definidas en `docker-compose.yml`:
 
-| Variable | Valor |
-|---|---|
-| Usuario | `convoca` |
-| Contraseña | `convoca` |
+| Variable      | Valor     |
+| ------------- | --------- |
+| Usuario       | `convoca` |
+| Contraseña    | `convoca` |
 | Base de datos | `convoca` |
-| Puerto | `5432` |
+| Puerto        | `5432`    |
 
 Comprueba que el contenedor está corriendo:
 
@@ -114,8 +114,8 @@ pnpm dev
 
 Lanza ambas apps en paralelo:
 
-| App | URL |
-|---|---|
+| App | URL                     |
+| --- | ----------------------- |
 | API | `http://localhost:4000` |
 | Web | `http://localhost:5173` |
 
@@ -157,40 +157,37 @@ Los tests de backend crean y limpian sus propios datos usando emails del dominio
 
 **Raíz del monorepo:**
 
-| Script | Descripción |
-|---|---|
-| `pnpm dev` | Levanta API y Web en paralelo (watch mode) |
-| `pnpm build` | Compila API (tsc) y Web (tsc + vite build) |
-| `pnpm test` | Ejecuta tests de todas las apps |
-| `pnpm lint` | ESLint en todos los paquetes |
-| `pnpm format` | Prettier en todos los ficheros |
+| Script        | Descripción                                |
+| ------------- | ------------------------------------------ |
+| `pnpm dev`    | Levanta API y Web en paralelo (watch mode) |
+| `pnpm build`  | Compila API (tsc) y Web (tsc + vite build) |
+| `pnpm test`   | Ejecuta tests de todas las apps            |
+| `pnpm lint`   | ESLint en todos los paquetes               |
+| `pnpm format` | Prettier en todos los ficheros             |
 
 **Solo API (`pnpm --filter api <script>`):**
 
-| Script | Descripción |
-|---|---|
-| `dev` | tsx watch — recarga en cada cambio |
-| `build` | Compila a `dist/` |
-| `start` | Ejecuta el build compilado |
-| `test` | Vitest en modo run |
-| `seed` | Carga datos de prueba |
+| Script  | Descripción                        |
+| ------- | ---------------------------------- |
+| `dev`   | tsx watch — recarga en cada cambio |
+| `build` | Compila a `dist/`                  |
+| `start` | Ejecuta el build compilado         |
+| `test`  | Vitest en modo run                 |
+| `seed`  | Carga datos de prueba              |
 
 **Solo Web (`pnpm --filter web <script>`):**
 
-| Script | Descripción |
-|---|---|
-| `dev` | Servidor Vite con HMR |
-| `build` | tsc + vite build |
+| Script    | Descripción             |
+| --------- | ----------------------- |
+| `dev`     | Servidor Vite con HMR   |
+| `build`   | tsc + vite build        |
 | `preview` | Sirve el build en local |
-| `test` | Vitest en modo run |
+| `test`    | Vitest en modo run      |
 
 ---
 
-## Despliegue en la nube
-
-> Esta sección se completará en la fase 9.
-
 Puntos a documentar:
+
 - Proveedor de hosting para la API (Railway / Render / Fly.io)
 - Proveedor de hosting para el frontend (Vercel / Netlify)
 - Configuración de variables de entorno en producción

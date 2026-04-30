@@ -34,9 +34,15 @@ beforeAll(async () => {
   }
 
   const [userReg, orgReg, adminReg] = await Promise.all([
-    request(app).post('/api/auth/register').send({ email: USER_EMAIL, password: PASSWORD, name: 'Stats User' }),
-    request(app).post('/api/auth/register').send({ email: ORG_EMAIL, password: PASSWORD, name: 'Stats Org' }),
-    request(app).post('/api/auth/register').send({ email: ADMIN_EMAIL, password: PASSWORD, name: 'Stats Admin' }),
+    request(app)
+      .post('/api/auth/register')
+      .send({ email: USER_EMAIL, password: PASSWORD, name: 'Stats User' }),
+    request(app)
+      .post('/api/auth/register')
+      .send({ email: ORG_EMAIL, password: PASSWORD, name: 'Stats Org' }),
+    request(app)
+      .post('/api/auth/register')
+      .send({ email: ADMIN_EMAIL, password: PASSWORD, name: 'Stats Admin' }),
   ]);
 
   await Promise.all([

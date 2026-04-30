@@ -22,9 +22,7 @@ export function RootLayout() {
       <Navbar onMenuToggle={() => setSidebarOpen(o => !o)} />
 
       <div className="flex">
-        {isAuthenticated && (
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        )}
+        {isAuthenticated && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
         <main className="min-w-0 flex-1">
           <Outlet />
         </main>

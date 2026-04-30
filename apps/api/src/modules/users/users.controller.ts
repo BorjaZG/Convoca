@@ -16,7 +16,10 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
 
 export async function updateRole(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const user = await usersService.updateUserRole(req.params['id'] as string, req.body as UpdateRoleInput);
+    const user = await usersService.updateUserRole(
+      req.params['id'] as string,
+      req.body as UpdateRoleInput
+    );
     res.json({ data: user });
   } catch (err) {
     next(err);

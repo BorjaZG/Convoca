@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw err;
       }
     },
-    [toast],
+    [toast]
   );
 
   const register = useCallback(
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw err;
       }
     },
-    [toast],
+    [toast]
   );
 
   const logout = useCallback(async () => {
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const hasRole = useCallback(
     (...roles: Role[]) => state.user !== null && roles.includes(state.user.role),
-    [state.user],
+    [state.user]
   );
 
   return (

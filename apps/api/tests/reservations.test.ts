@@ -129,9 +129,7 @@ describe('POST /api/reservations', () => {
 describe('PATCH /api/reservations/:id/cancel', () => {
   it('cancela la reserva y libera capacity para otra', async () => {
     // Obtener la reserva creada en el test anterior
-    const myRes = await request(app)
-      .get('/api/reservations/me')
-      .set('Cookie', userCookies);
+    const myRes = await request(app).get('/api/reservations/me').set('Cookie', userCookies);
     expect(myRes.status).toBe(200);
 
     const reservation = myRes.body.data.find(
@@ -156,9 +154,7 @@ describe('PATCH /api/reservations/:id/cancel', () => {
   });
 
   it('devuelve 409 al cancelar una reserva ya cancelada', async () => {
-    const myRes = await request(app)
-      .get('/api/reservations/me')
-      .set('Cookie', userCookies);
+    const myRes = await request(app).get('/api/reservations/me').set('Cookie', userCookies);
 
     const cancelled = myRes.body.data.find(
       (r: { eventId: string; status: string }) =>
@@ -180,12 +176,8 @@ describe('PATCH /api/reservations/:id/cancel', () => {
       .send({ email: otherEmail, password: 'Other1234', name: 'Other User' });
     const otherCookies = parseCookies(otherReg.headers['set-cookie']);
 
-    const myRes = await request(app)
-      .get('/api/reservations/me')
-      .set('Cookie', userCookies);
-    const confirmed = myRes.body.data.find(
-      (r: { status: string }) => r.status === 'CONFIRMED'
-    );
+    const myRes = await request(app).get('/api/reservations/me').set('Cookie', userCookies);
+    const confirmed = myRes.body.data.find((r: { status: string }) => r.status === 'CONFIRMED');
 
     if (confirmed) {
       const res = await request(app)

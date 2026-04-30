@@ -14,7 +14,13 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/context/ToastContext';
 import { useOrganizerStats } from '@/hooks/useStats';
 import { useFetch } from '@/hooks/useFetch';
@@ -46,15 +52,29 @@ const STATUS_LABELS: Record<EventStatus, string> = {
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  CONCIERTO: 'Concierto', EXPOSICION: 'Exposición', TALLER: 'Taller',
-  MERCADILLO: 'Mercadillo', TEATRO: 'Teatro', CONFERENCIA: 'Conferencia',
-  GASTRONOMIA: 'Gastronomía', DEPORTE: 'Deporte',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
+  CONFERENCIA: 'Conferencia',
+  GASTRONOMIA: 'Gastronomía',
+  DEPORTE: 'Deporte',
 };
 
 export function OrganizerDashboardPage() {
-  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useOrganizerStats();
-  const { data: events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } =
-    useFetch<EventWithOrganizer[]>(() => eventsService.mine());
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useOrganizerStats();
+  const {
+    data: events,
+    loading: eventsLoading,
+    error: eventsError,
+    refetch: refetchEvents,
+  } = useFetch<EventWithOrganizer[]>(() => eventsService.mine());
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -80,16 +100,19 @@ export function OrganizerDashboardPage() {
     return true;
   });
 
-  const handleCancel = useCallback(async (id: string) => {
-    try {
-      await eventsService.update(id, { status: 'CANCELLED' });
-      success('Evento cancelado');
-      refetchEvents();
-      refetchStats();
-    } catch {
-      toastError('No se pudo cancelar el evento');
-    }
-  }, [success, toastError, refetchEvents, refetchStats]);
+  const handleCancel = useCallback(
+    async (id: string) => {
+      try {
+        await eventsService.update(id, { status: 'CANCELLED' });
+        success('Evento cancelado');
+        refetchEvents();
+        refetchStats();
+      } catch {
+        toastError('No se pudo cancelar el evento');
+      }
+    },
+    [success, toastError, refetchEvents, refetchStats]
+  );
 
   const columns: ColumnDef<EventWithOrganizer>[] = [
     {
@@ -109,7 +132,9 @@ export function OrganizerDashboardPage() {
       accessorFn: row => row.category,
       header: 'Categoría',
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{CATEGORY_LABELS[row.original.category]}</span>
+        <span className="text-sm text-muted-foreground">
+          {CATEGORY_LABELS[row.original.category]}
+        </span>
       ),
     },
     {
@@ -131,7 +156,15 @@ export function OrganizerDashboardPage() {
       accessorKey: 'status',
       header: 'Estado',
       cell: ({ row }) => (
-        <Badge variant={STATUS_STYLES[row.original.status] as 'success' | 'destructive' | 'secondary' | 'outline'}>
+        <Badge
+          variant={
+            STATUS_STYLES[row.original.status] as
+              | 'success'
+              | 'destructive'
+              | 'secondary'
+              | 'outline'
+          }
+        >
           {STATUS_LABELS[row.original.status]}
         </Badge>
       ),
@@ -141,7 +174,11 @@ export function OrganizerDashboardPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/organizer/events/${row.original.id}/edit`)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate(`/organizer/events/${row.original.id}/edit`)}
+          >
             Editar
           </Button>
           {row.original.status !== 'CANCELLED' && (
@@ -159,14 +196,21 @@ export function OrganizerDashboardPage() {
     },
   ];
 
-  if (statsError) return <div className="p-8"><ErrorState error={statsError} onRetry={refetchStats} /></div>;
+  if (statsError)
+    return (
+      <div className="p-8">
+        <ErrorState error={statsError} onRetry={refetchStats} />
+      </div>
+    );
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard del organizador</h1>
-          <p className="text-sm text-muted-foreground">Gestiona tus eventos y analiza su rendimiento</p>
+          <p className="text-sm text-muted-foreground">
+            Gestiona tus eventos y analiza su rendimiento
+          </p>
         </div>
         <Button onClick={() => navigate('/organizer/events/new')} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -176,8 +220,18 @@ export function OrganizerDashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Eventos activos" value={stats?.activeEvents ?? 0} icon={BarChart2} loading={statsLoading} />
-        <StatCard title="Reservas totales" value={stats?.totalReservations ?? 0} icon={Ticket} loading={statsLoading} />
+        <StatCard
+          title="Eventos activos"
+          value={stats?.activeEvents ?? 0}
+          icon={BarChart2}
+          loading={statsLoading}
+        />
+        <StatCard
+          title="Reservas totales"
+          value={stats?.totalReservations ?? 0}
+          icon={Ticket}
+          loading={statsLoading}
+        />
         <StatCard
           title="Ingresos (€)"
           value={stats ? `${stats.totalRevenue.toFixed(2)} €` : '—'}
@@ -197,7 +251,10 @@ export function OrganizerDashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard title="Eventos por categoría" loading={statsLoading}>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={stats?.eventsByCategory ?? []} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
+            <BarChart
+              data={stats?.eventsByCategory ?? []}
+              margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis
                 dataKey="category"
@@ -205,7 +262,12 @@ export function OrganizerDashboardPage() {
                 tickFormatter={v => CATEGORY_LABELS[v as Category]?.slice(0, 5) ?? v}
               />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-              <Tooltip formatter={(_v, _n, props) => [props.value, CATEGORY_LABELS[props.payload.category as Category] ?? props.payload.category]} />
+              <Tooltip
+                formatter={(_v, _n, props) => [
+                  props.value,
+                  CATEGORY_LABELS[props.payload.category as Category] ?? props.payload.category,
+                ]}
+              />
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -213,12 +275,21 @@ export function OrganizerDashboardPage() {
 
         <ChartCard title="Reservas por mes (últimos 6)" loading={statsLoading}>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={stats?.reservationsByMonth ?? []} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
+            <LineChart
+              data={stats?.reservationsByMonth ?? []}
+              margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={v => v.slice(5)} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -241,12 +312,17 @@ export function OrganizerDashboardPage() {
             <SelectContent>
               <SelectItem value="ALL">Todas</SelectItem>
               {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
-                <SelectItem key={v} value={v}>{l}</SelectItem>
+                <SelectItem key={v} value={v}>
+                  {l}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Select value={statusFilter} onValueChange={v => setStatusFilter(v as EventStatus | 'ALL')}>
+          <Select
+            value={statusFilter}
+            onValueChange={v => setStatusFilter(v as EventStatus | 'ALL')}
+          >
             <SelectTrigger className="h-9 w-36">
               <SelectValue placeholder="Estado" />
             </SelectTrigger>

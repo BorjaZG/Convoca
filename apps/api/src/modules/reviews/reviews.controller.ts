@@ -5,10 +5,7 @@ import type { CreateReviewInput } from './reviews.schemas';
 
 export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const review = await reviewsService.createReview(
-      req.body as CreateReviewInput,
-      req.user!.id
-    );
+    const review = await reviewsService.createReview(req.body as CreateReviewInput, req.user!.id);
     res.status(201).json({ data: review });
   } catch (err) {
     next(err);

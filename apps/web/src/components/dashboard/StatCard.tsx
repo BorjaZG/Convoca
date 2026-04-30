@@ -14,7 +14,15 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend, description, loading, className }: StatCardProps) {
+export function StatCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  description,
+  loading,
+  className,
+}: StatCardProps) {
   if (loading) {
     return (
       <Card className={cn('p-6', className)}>
@@ -32,14 +40,14 @@ export function StatCard({ title, value, icon: Icon, trend, description, loading
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
             <p className="text-3xl font-bold tracking-tight">{value}</p>
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+            {description && <p className="text-xs text-muted-foreground">{description}</p>}
             {trend !== undefined && (
               <div
                 className={cn(
                   'flex items-center gap-1 text-xs font-medium',
-                  trend.value >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
+                  trend.value >= 0
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-500 dark:text-red-400'
                 )}
               >
                 {trend.value >= 0 ? (

@@ -31,14 +31,25 @@ import {
 } from 'recharts';
 
 const COLORS = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b',
-  '#10b981', '#3b82f6', '#ef4444', '#14b8a6',
+  '#6366f1',
+  '#8b5cf6',
+  '#ec4899',
+  '#f59e0b',
+  '#10b981',
+  '#3b82f6',
+  '#ef4444',
+  '#14b8a6',
 ];
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  CONCIERTO: 'Concierto', EXPOSICION: 'Exposición', TALLER: 'Taller',
-  MERCADILLO: 'Mercadillo', TEATRO: 'Teatro', CONFERENCIA: 'Conferencia',
-  GASTRONOMIA: 'Gastronomía', DEPORTE: 'Deporte',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
+  CONFERENCIA: 'Conferencia',
+  GASTRONOMIA: 'Gastronomía',
+  DEPORTE: 'Deporte',
 };
 
 export function AdminDashboardPage() {
@@ -49,35 +60,50 @@ export function AdminDashboardPage() {
     endDate: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
   };
 
-  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useAdminStats(statsRange);
-  const { data: pendingEvents, loading: pendingLoading, error: pendingError, refetch: refetchPending } =
-    useFetch<EventWithOrganizer[]>(() => eventsService.pending());
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useAdminStats(statsRange);
+  const {
+    data: pendingEvents,
+    loading: pendingLoading,
+    error: pendingError,
+    refetch: refetchPending,
+  } = useFetch<EventWithOrganizer[]>(() => eventsService.pending());
 
   const { toast } = useToast();
   const success = toast.success;
   const toastError = toast.error;
 
-  const handleApprove = useCallback(async (id: string) => {
-    try {
-      await eventsService.update(id, { status: 'PUBLISHED' });
-      success('Evento publicado');
-      refetchPending();
-      refetchStats();
-    } catch {
-      toastError('Error al publicar el evento');
-    }
-  }, [success, toastError, refetchPending, refetchStats]);
+  const handleApprove = useCallback(
+    async (id: string) => {
+      try {
+        await eventsService.update(id, { status: 'PUBLISHED' });
+        success('Evento publicado');
+        refetchPending();
+        refetchStats();
+      } catch {
+        toastError('Error al publicar el evento');
+      }
+    },
+    [success, toastError, refetchPending, refetchStats]
+  );
 
-  const handleReject = useCallback(async (id: string) => {
-    try {
-      await eventsService.update(id, { status: 'CANCELLED' });
-      success('Evento rechazado');
-      refetchPending();
-      refetchStats();
-    } catch {
-      toastError('Error al rechazar el evento');
-    }
-  }, [success, toastError, refetchPending, refetchStats]);
+  const handleReject = useCallback(
+    async (id: string) => {
+      try {
+        await eventsService.update(id, { status: 'CANCELLED' });
+        success('Evento rechazado');
+        refetchPending();
+        refetchStats();
+      } catch {
+        toastError('Error al rechazar el evento');
+      }
+    },
+    [success, toastError, refetchPending, refetchStats]
+  );
 
   const pendingColumns: ColumnDef<EventWithOrganizer>[] = [
     {
@@ -107,12 +133,20 @@ export function AdminDashboardPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button size="sm" variant="outline" className="text-green-700 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-950"
-            onClick={() => handleApprove(row.original.id)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-green-700 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-950"
+            onClick={() => handleApprove(row.original.id)}
+          >
             Aprobar
           </Button>
-          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive"
-            onClick={() => handleReject(row.original.id)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive hover:text-destructive"
+            onClick={() => handleReject(row.original.id)}
+          >
             Rechazar
           </Button>
         </div>
@@ -120,7 +154,12 @@ export function AdminDashboardPage() {
     },
   ];
 
-  const topOrgColumns: ColumnDef<{ id: string; name: string; totalEvents: number; totalRevenue: number }>[] = [
+  const topOrgColumns: ColumnDef<{
+    id: string;
+    name: string;
+    totalEvents: number;
+    totalRevenue: number;
+  }>[] = [
     { accessorKey: 'name', header: 'Nombre' },
     { accessorKey: 'totalEvents', header: 'Eventos' },
     {
@@ -130,7 +169,12 @@ export function AdminDashboardPage() {
     },
   ];
 
-  if (statsError) return <div className="p-8"><ErrorState error={statsError} onRetry={refetchStats} /></div>;
+  if (statsError)
+    return (
+      <div className="p-8">
+        <ErrorState error={statsError} onRetry={refetchStats} />
+      </div>
+    );
 
   return (
     <div className="p-6 space-y-6">
@@ -148,9 +192,24 @@ export function AdminDashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Usuarios totales" value={stats?.totalUsers ?? 0} icon={Users} loading={statsLoading} />
-        <StatCard title="Eventos publicados" value={stats?.publishedEvents ?? 0} icon={FileCheck} loading={statsLoading} />
-        <StatCard title="Reservas" value={stats?.totalReservations ?? 0} icon={Ticket} loading={statsLoading} />
+        <StatCard
+          title="Usuarios totales"
+          value={stats?.totalUsers ?? 0}
+          icon={Users}
+          loading={statsLoading}
+        />
+        <StatCard
+          title="Eventos publicados"
+          value={stats?.publishedEvents ?? 0}
+          icon={FileCheck}
+          loading={statsLoading}
+        />
+        <StatCard
+          title="Reservas"
+          value={stats?.totalReservations ?? 0}
+          icon={Ticket}
+          loading={statsLoading}
+        />
         <StatCard
           title="Ingresos plataforma"
           value={stats ? `${stats.totalRevenue.toFixed(2)} €` : '—'}
@@ -163,7 +222,10 @@ export function AdminDashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard title="Eventos publicados por mes (últimos 12)" loading={statsLoading}>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={stats?.eventsByMonth ?? []} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
+            <AreaChart
+              data={stats?.eventsByMonth ?? []}
+              margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -199,7 +261,8 @@ export function AdminDashboardPage() {
                 cy="50%"
                 outerRadius={75}
                 label={({ name, percent }: { name?: string; percent?: number }) =>
-                  `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`
+                }
                 labelLine={false}
               >
                 {(stats?.categoryDistribution ?? []).map((_, i) => (
@@ -232,9 +295,7 @@ export function AdminDashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-semibold">Eventos por moderar</h2>
-          {!pendingLoading && (
-            <Badge variant="secondary">{pendingEvents?.length ?? 0}</Badge>
-          )}
+          {!pendingLoading && <Badge variant="secondary">{pendingEvents?.length ?? 0}</Badge>}
         </div>
 
         <DataTable

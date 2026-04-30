@@ -14,7 +14,12 @@ interface DateRangePickerProps {
   placeholder?: string;
 }
 
-export function DateRangePicker({ value, onChange, className, placeholder = 'Selecciona un rango' }: DateRangePickerProps) {
+export function DateRangePicker({
+  value,
+  onChange,
+  className,
+  placeholder = 'Selecciona un rango',
+}: DateRangePickerProps) {
   const from = value.from;
   const to = value.to;
 
@@ -30,7 +35,11 @@ export function DateRangePicker({ value, onChange, className, placeholder = 'Sel
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn('min-w-[220px] justify-start gap-2 text-left font-normal', !from && 'text-muted-foreground', className)}
+          className={cn(
+            'min-w-[220px] justify-start gap-2 text-left font-normal',
+            !from && 'text-muted-foreground',
+            className
+          )}
         >
           <CalendarIcon className="h-4 w-4" />
           {label}

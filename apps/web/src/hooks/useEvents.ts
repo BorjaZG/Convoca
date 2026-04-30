@@ -6,7 +6,19 @@ export function useEvents(filters: EventFilters = {}) {
   const { page, limit, category, city, q, startDate, endDate, maxPrice, sortBy, order } = filters;
 
   return useFetch<PaginatedResponse<EventWithOrganizer>>(
-    () => eventsService.list({ page, limit, category, city, q, startDate, endDate, maxPrice, sortBy, order }),
+    () =>
+      eventsService.list({
+        page,
+        limit,
+        category,
+        city,
+        q,
+        startDate,
+        endDate,
+        maxPrice,
+        sortBy,
+        order,
+      }),
     [page, limit, category, city, q, startDate, endDate, maxPrice, sortBy, order]
   );
 }

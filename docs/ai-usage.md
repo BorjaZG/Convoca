@@ -13,11 +13,12 @@
 ## Fases donde se usó IA
 
 [RELLENA ESTO TÚ — indica en qué fases del proyecto recurriste a IA y para qué. Por ejemplo:
+
 - Fase 0 (bootstrap): ¿te ayudó a configurar el monorepo pnpm?
 - Fase 1 (auth): ¿te explicó el flujo de refresh tokens?
 - Fase 5 (testing): ¿te generó tests o te explicó patrones de Vitest + Testing Library?
 - Fase 7 (Cloudinary): ¿te ayudó a entender la firma server-side?
-Sé específico sobre cuándo la IA fue útil de verdad y cuándo no lo fue tanto.]
+  Sé específico sobre cuándo la IA fue útil de verdad y cuándo no lo fue tanto.]
 
 ---
 
@@ -36,6 +37,7 @@ Ejemplos de momentos que podrían merecer un apartado: la decisión de usar cook
 ## Qué se rechazó o modificó
 
 [RELLENA ESTO TÚ — documenta casos donde la IA te sugirió algo que NO usaste o que tuviste que corregir. Esto demuestra que fuiste tú quien tomó las decisiones, no la IA. Por ejemplo:
+
 - ¿Te propuso usar Redux y decidiste Context + useReducer?
 - ¿Te generó un test con mocks que luego eliminaste por tu filosofía de tests de integración?
 - ¿Te sugirió una estructura de carpetas diferente a la que adoptaste?
@@ -46,6 +48,7 @@ Ejemplos de momentos que podrían merecer un apartado: la decisión de usar cook
 ## Qué he aprendido
 
 [RELLENA ESTO TÚ — reflexión personal sobre el uso de IA como herramienta de desarrollo. Preguntas que pueden guiar la reflexión:
+
 - ¿En qué tipo de tareas te resultó más útil la IA (explicar conceptos, generar boilerplate, depurar, etc.)?
 - ¿Qué habrías hecho diferente en cuanto al uso de IA?
 - ¿Hubo algún momento en que el uso de IA ralentizó tu aprendizaje en lugar de acelerarlo?

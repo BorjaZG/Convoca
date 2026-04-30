@@ -237,20 +237,20 @@ erDiagram
 
 ## Stack completo
 
-| Capa | Tecnología | Versión |
-|---|---|---|
-| Runtime | Node.js | 20 LTS |
-| Framework API | Express | 4.x |
-| ORM | Prisma | 5.x |
-| Base de datos | PostgreSQL | 16 |
-| Validación | Zod | 3.x |
-| Autenticación | jsonwebtoken + bcryptjs | — |
-| Imágenes | Cloudinary SDK | 2.x |
-| Framework web | Vite + React | 5.x + 18.x |
-| Lenguaje | TypeScript | 5.x |
-| Estilos | Tailwind CSS + shadcn/ui | 3.x |
-| Formularios | react-hook-form | 7.x |
-| Gráficos | Recharts | 2.x |
-| Iconos | lucide-react | — |
-| Testing | Vitest + Supertest + Testing Library | — |
-| Gestión de paquetes | pnpm workspaces | 9.x |
+| Capa                | Tecnología                           | Versión    |
+| ------------------- | ------------------------------------ | ---------- |
+| Runtime             | Node.js                              | 20 LTS     |
+| Framework API       | Express                              | 4.x        |
+| ORM                 | Prisma                               | 5.x        |
+| Base de datos       | PostgreSQL                           | 16         |
+| Validación          | Zod                                  | 3.x        |
+| Autenticación       | jsonwebtoken + bcryptjs              | —          |
+| Imágenes            | Cloudinary SDK                       | 2.x        |
+| Framework web       | Vite + React                         | 5.x + 18.x |
+| Lenguaje            | TypeScript                           | 5.x        |
+| Estilos             | Tailwind CSS + shadcn/ui             | 3.x        |
+| Formularios         | react-hook-form                      | 7.x        |
+| Gráficos            | Recharts                             | 2.x        |
+| Iconos              | lucide-react                         | —          |
+| Testing             | Vitest + Supertest + Testing Library | —          |
+| Gestión de paquetes | pnpm workspaces                      | 9.x        |

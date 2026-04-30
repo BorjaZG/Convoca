@@ -13,14 +13,14 @@ import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
   { value: '', label: 'Todas las categorías' },
-  { value: 'CONCIERTO',   label: 'Concierto' },
-  { value: 'EXPOSICION',  label: 'Exposición' },
-  { value: 'TALLER',      label: 'Taller' },
-  { value: 'MERCADILLO',  label: 'Mercadillo' },
-  { value: 'TEATRO',      label: 'Teatro' },
+  { value: 'CONCIERTO', label: 'Concierto' },
+  { value: 'EXPOSICION', label: 'Exposición' },
+  { value: 'TALLER', label: 'Taller' },
+  { value: 'MERCADILLO', label: 'Mercadillo' },
+  { value: 'TEATRO', label: 'Teatro' },
   { value: 'CONFERENCIA', label: 'Conferencia' },
   { value: 'GASTRONOMIA', label: 'Gastronomía' },
-  { value: 'DEPORTE',     label: 'Deporte' },
+  { value: 'DEPORTE', label: 'Deporte' },
 ];
 
 const SELECT_CLASSES = cn(
@@ -65,8 +65,12 @@ export function EventsPage() {
   };
 
   const hasActiveFilters =
-    !!filters.category || !!filters.city || !!filters.startDate ||
-    !!filters.endDate || !!filters.maxPrice || !!debouncedSearch;
+    !!filters.category ||
+    !!filters.city ||
+    !!filters.startDate ||
+    !!filters.endDate ||
+    !!filters.maxPrice ||
+    !!debouncedSearch;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -181,7 +185,9 @@ export function EventsPage() {
               ? 'Prueba a ajustar los filtros para ver más resultados.'
               : 'Aún no hay eventos publicados. ¡Vuelve pronto!'
           }
-          action={hasActiveFilters ? { label: 'Limpiar filtros', onClick: clearFilters } : undefined}
+          action={
+            hasActiveFilters ? { label: 'Limpiar filtros', onClick: clearFilters } : undefined
+          }
         />
       )}
 

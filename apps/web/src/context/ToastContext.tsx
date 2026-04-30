@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useReducer,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useReducer, type ReactNode } from 'react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,7 +24,7 @@ export function toastReducer(state: ToastState, action: ToastAction): ToastState
     case 'ADD_TOAST':
       return { toasts: [...state.toasts, action.payload] };
     case 'REMOVE_TOAST':
-      return { toasts: state.toasts.filter((t) => t.id !== action.payload) };
+      return { toasts: state.toasts.filter(t => t.id !== action.payload) };
   }
 }
 

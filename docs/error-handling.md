@@ -12,7 +12,10 @@ Todas las clases de error extienden `AppError`:
 
 ```typescript
 class AppError extends Error {
-  constructor(public statusCode: number, message: string) {
+  constructor(
+    public statusCode: number,
+    message: string
+  ) {
     super(message);
   }
 }
@@ -42,7 +45,8 @@ Los servicios de negocio lanzan estas clases directamente:
 // eventsService.ts
 if (!event) throw new NotFoundError('Evento no encontrado');
 if (event.organizerId !== userId && userRole !== 'ADMIN') throw new ForbiddenError();
-if (confirmed > 0) throw new ConflictError('No se puede eliminar un evento con reservas confirmadas');
+if (confirmed > 0)
+  throw new ConflictError('No se puede eliminar un evento con reservas confirmadas');
 ```
 
 ---
@@ -110,6 +114,7 @@ function errorHandler(err, req, res, next) {
 ```
 
 El orden de middlewares en las rutas protegidas es siempre:
+
 ```
 requireAuth → requireRole (si aplica) → validate(schema) → controlador
 ```
@@ -142,9 +147,12 @@ async function request<T>(url: string, options: RequestInit): Promise<T> {
 
 export const api = {
   get: <T>(url: string) => request<T>(url, { method: 'GET' }),
-  post: <T>(url: string, body: unknown) => request<T>(url, { method: 'POST', body: JSON.stringify(body) }),
-  put: <T>(url: string, body: unknown) => request<T>(url, { method: 'PUT', body: JSON.stringify(body) }),
-  patch: <T>(url: string, body: unknown) => request<T>(url, { method: 'PATCH', body: JSON.stringify(body) }),
+  post: <T>(url: string, body: unknown) =>
+    request<T>(url, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(url: string, body: unknown) =>
+    request<T>(url, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(url: string, body: unknown) =>
+    request<T>(url, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(url: string) => request<T>(url, { method: 'DELETE' }),
 };
 ```
@@ -214,11 +222,11 @@ Si el refresh devuelve también un 401 (token revocado o expirado), `api.ts` pro
 
 ## Resumen de códigos HTTP y su origen
 
-| Código | Origen en backend | Qué significa para el usuario |
-|---|---|---|
-| 400 | `validate(ZodSchema)` falla | Los datos enviados no tienen el formato correcto |
-| 401 | `requireAuth` — token ausente, inválido o expirado | La sesión ha caducado → el frontend reintenta con refresh |
-| 403 | `requireRole` — rol insuficiente; `ForbiddenError` en servicio | No tiene permisos para esta acción |
-| 404 | `NotFoundError` en servicio | El recurso solicitado no existe |
-| 409 | `ConflictError` en servicio | Conflicto de datos (email en uso, sin capacidad, etc.) |
-| 500 | Error no capturado por los anteriores | Error interno; se registra en consola del servidor |
+| Código | Origen en backend                                              | Qué significa para el usuario                             |
+| ------ | -------------------------------------------------------------- | --------------------------------------------------------- |
+| 400    | `validate(ZodSchema)` falla                                    | Los datos enviados no tienen el formato correcto          |
+| 401    | `requireAuth` — token ausente, inválido o expirado             | La sesión ha caducado → el frontend reintenta con refresh |
+| 403    | `requireRole` — rol insuficiente; `ForbiddenError` en servicio | No tiene permisos para esta acción                        |
+| 404    | `NotFoundError` en servicio                                    | El recurso solicitado no existe                           |
+| 409    | `ConflictError` en servicio                                    | Conflicto de datos (email en uso, sin capacidad, etc.)    |
+| 500    | Error no capturado por los anteriores                          | Error interno; se registra en consola del servidor        |

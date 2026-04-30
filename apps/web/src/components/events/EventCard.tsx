@@ -7,25 +7,25 @@ import { cn } from '@/lib/utils';
 import { formatDate, formatPrice } from '@/lib/formatters';
 
 const CATEGORY_STYLES: Record<Category, string> = {
-  CONCIERTO:   'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  EXPOSICION:  'bg-blue-100   text-blue-700   dark:bg-blue-900/40   dark:text-blue-300',
-  TALLER:      'bg-green-100  text-green-700  dark:bg-green-900/40  dark:text-green-300',
-  MERCADILLO:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  TEATRO:      'bg-red-100    text-red-700    dark:bg-red-900/40    dark:text-red-300',
+  CONCIERTO: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  EXPOSICION: 'bg-blue-100   text-blue-700   dark:bg-blue-900/40   dark:text-blue-300',
+  TALLER: 'bg-green-100  text-green-700  dark:bg-green-900/40  dark:text-green-300',
+  MERCADILLO: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  TEATRO: 'bg-red-100    text-red-700    dark:bg-red-900/40    dark:text-red-300',
   CONFERENCIA: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
   GASTRONOMIA: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-  DEPORTE:     'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  DEPORTE: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  CONCIERTO:   'Concierto',
-  EXPOSICION:  'Exposición',
-  TALLER:      'Taller',
-  MERCADILLO:  'Mercadillo',
-  TEATRO:      'Teatro',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
   CONFERENCIA: 'Conferencia',
   GASTRONOMIA: 'Gastronomía',
-  DEPORTE:     'Deporte',
+  DEPORTE: 'Deporte',
 };
 
 interface EventCardProps {

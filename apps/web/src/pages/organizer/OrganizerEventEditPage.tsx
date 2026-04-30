@@ -38,7 +38,12 @@ export function OrganizerEventEditPage() {
   };
 
   if (loading) return <Loading />;
-  if (error) return <div className="p-8"><ErrorState error={error} onRetry={refetch} /></div>;
+  if (error)
+    return (
+      <div className="p-8">
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
   if (!event) return null;
 
   return (

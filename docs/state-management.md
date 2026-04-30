@@ -10,20 +10,21 @@ Esto no es una máxima filosófica; es una regla operativa para evitar re-render
 
 ## Tabla de decisión: qué va dónde y por qué
 
-| Estado | Mecanismo | Dónde vive | Razón |
-|---|---|---|---|
-| Sesión del usuario (user, status) | `useReducer` + Context | `AuthContext` | Múltiples partes de la UI necesitan saber si hay sesión y quién es el usuario. Cambios poco frecuentes. |
-| Tema visual (light/dark) | `useState` + Context | `ThemeContext` | Persiste entre recargas (localStorage), afecta a toda la UI vía clase en `<html>`. |
-| Notificaciones toast | `useReducer` + Context | `ToastContext` | Cualquier capa (incluido otro Context) puede disparar un toast sin acoplar UI al componente que lanza la acción. |
-| Valores de formulario | `react-hook-form` | Local al componente | Mutan con cada tecla; si fueran globales provocarían re-renders en toda la app. |
-| Filtros / paginación de listas | `useState` local | Local al componente de lista | Solo interesan a esa vista. No hay razón para compartirlos. |
-| Eventos, reservas, reseñas | Hooks custom con `useFetch` | `useEvents`, `useEvent`, `useReservations`, `useStats` | Son datos del servidor, tienen su propio ciclo de vida (loading, error, refetch). Context es el mecanismo equivocado para esto. |
+| Estado                            | Mecanismo                   | Dónde vive                                             | Razón                                                                                                                           |
+| --------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Sesión del usuario (user, status) | `useReducer` + Context      | `AuthContext`                                          | Múltiples partes de la UI necesitan saber si hay sesión y quién es el usuario. Cambios poco frecuentes.                         |
+| Tema visual (light/dark)          | `useState` + Context        | `ThemeContext`                                         | Persiste entre recargas (localStorage), afecta a toda la UI vía clase en `<html>`.                                              |
+| Notificaciones toast              | `useReducer` + Context      | `ToastContext`                                         | Cualquier capa (incluido otro Context) puede disparar un toast sin acoplar UI al componente que lanza la acción.                |
+| Valores de formulario             | `react-hook-form`           | Local al componente                                    | Mutan con cada tecla; si fueran globales provocarían re-renders en toda la app.                                                 |
+| Filtros / paginación de listas    | `useState` local            | Local al componente de lista                           | Solo interesan a esa vista. No hay razón para compartirlos.                                                                     |
+| Eventos, reservas, reseñas        | Hooks custom con `useFetch` | `useEvents`, `useEvent`, `useReservations`, `useStats` | Son datos del servidor, tienen su propio ciclo de vida (loading, error, refetch). Context es el mecanismo equivocado para esto. |
 
 ---
 
 ## Por qué **no** usamos Redux ni Zustand
 
 **Redux** añade boilerplate (actions, action creators, selectors, middleware) que solo compensa cuando:
+
 - Hay lógica de negocio compleja que debe testearse en aislamiento del DOM.
 - El estado se comparte entre rutas con ciclos de vida completamente distintos.
 - Se necesita time-travel debugging en producción.
@@ -45,9 +46,14 @@ Un consumidor que solo necesita el tema (`useTheme`) se re-renderizaría cada ve
 
 ```tsx
 // ✓ Tres contextos independientes
-<ThemeProvider>   // re-renderiza solo cuando cambia el tema
-  <ToastProvider> // re-renderiza solo cuando aparece/desaparece un toast
-    <AuthProvider>// re-renderiza solo cuando cambia la sesión
+<ThemeProvider>
+  {' '}
+  // re-renderiza solo cuando cambia el tema
+  <ToastProvider>
+    {' '}
+    // re-renderiza solo cuando aparece/desaparece un toast
+    <AuthProvider>
+      // re-renderiza solo cuando cambia la sesión
       <App />
     </AuthProvider>
   </ToastProvider>
@@ -59,6 +65,7 @@ Un consumidor que solo necesita el tema (`useTheme`) se re-renderizaría cada ve
 ## Por qué **no** metemos datos del servidor en Context
 
 Los datos remotos tienen necesidades que Context no cubre:
+
 - **Revalidación automática** cuando la ventana vuelve al foco.
 - **Deduplicación** de peticiones concurrentes.
 - **Cache compartida** entre componentes que piden el mismo recurso.

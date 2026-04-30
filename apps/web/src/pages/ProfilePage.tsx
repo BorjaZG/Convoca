@@ -16,13 +16,13 @@ import type { ReservationWithEvent } from '@/types';
 const STATUS_STYLES: Record<string, string> = {
   CONFIRMED: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
   CANCELLED: 'bg-red-100   text-red-700   dark:bg-red-900/40   dark:text-red-300',
-  ATTENDED:  'bg-blue-100  text-blue-700  dark:bg-blue-900/40  dark:text-blue-300',
+  ATTENDED: 'bg-blue-100  text-blue-700  dark:bg-blue-900/40  dark:text-blue-300',
 };
 
 const STATUS_LABELS: Record<string, string> = {
   CONFIRMED: 'Confirmada',
   CANCELLED: 'Cancelada',
-  ATTENDED:  'Asistida',
+  ATTENDED: 'Asistida',
 };
 
 function ReservationItem({

@@ -15,7 +15,8 @@ export async function createReview(data: CreateReviewInput, userId: string) {
   const attended = await prisma.reservation.findFirst({
     where: { userId, eventId: data.eventId, status: ReservationStatus.ATTENDED },
   });
-  if (!attended) throw new ForbiddenError('Debes haber asistido al evento para publicar una reseña');
+  if (!attended)
+    throw new ForbiddenError('Debes haber asistido al evento para publicar una reseña');
 
   const existing = await prisma.review.findUnique({
     where: { userId_eventId: { userId, eventId: data.eventId } },
@@ -28,10 +29,7 @@ export async function createReview(data: CreateReviewInput, userId: string) {
   });
 }
 
-export async function getEventReviews(
-  eventId: string,
-  query: { page?: string; limit?: string }
-) {
+export async function getEventReviews(eventId: string, query: { page?: string; limit?: string }) {
   const { page, limit, skip } = paginate(query);
 
   const [reviews, total] = await prisma.$transaction([

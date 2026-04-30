@@ -217,9 +217,7 @@ describe('DELETE /api/events/:id — soft delete', () => {
     const createRes = await createEvent({ title: 'Evento Sin Reservas' });
     const eventId = createRes.body.data.id;
 
-    const deleteRes = await request(app)
-      .delete(`/api/events/${eventId}`)
-      .set('Cookie', orgCookies);
+    const deleteRes = await request(app).delete(`/api/events/${eventId}`).set('Cookie', orgCookies);
     expect(deleteRes.status).toBe(204);
 
     const getRes = await request(app).get(`/api/events/${eventId}`);
@@ -246,9 +244,7 @@ describe('DELETE /api/events/:id — soft delete', () => {
       data: { eventId, userId: testUser.id, quantity: 1, totalPrice: 10, status: 'CONFIRMED' },
     });
 
-    const deleteRes = await request(app)
-      .delete(`/api/events/${eventId}`)
-      .set('Cookie', orgCookies);
+    const deleteRes = await request(app).delete(`/api/events/${eventId}`).set('Cookie', orgCookies);
     expect(deleteRes.status).toBe(204);
 
     // El evento sigue existiendo pero con status CANCELLED

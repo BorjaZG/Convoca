@@ -91,7 +91,11 @@ export function RegisterPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || status === 'loading'}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || status === 'loading'}
+            >
               {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta'}
             </Button>
 

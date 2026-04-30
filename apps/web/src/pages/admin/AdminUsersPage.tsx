@@ -8,7 +8,13 @@ import { DataTable } from '@/components/dashboard/DataTable';
 import { FilterBar } from '@/components/dashboard/FilterBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useFetch } from '@/hooks/useFetch';
@@ -32,46 +38,53 @@ export function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<Role | 'ALL'>('ALL');
 
-  const { data: response, loading, error, refetch } = useFetch<Awaited<ReturnType<typeof usersService.list>>>(
+  const {
+    data: response,
+    loading,
+    error,
+    refetch,
+  } = useFetch<Awaited<ReturnType<typeof usersService.list>>>(
     () => usersService.list(1, 100, roleFilter !== 'ALL' ? roleFilter : undefined),
     [roleFilter]
   );
 
-  const handleRoleChange = useCallback(async (id: string, role: Role) => {
-    try {
-      await usersService.updateRole(id, role);
-      toast.success('Rol actualizado');
-      refetch();
-    } catch {
-      toast.error('No se pudo actualizar el rol');
-    }
-  }, [toast, refetch]);
+  const handleRoleChange = useCallback(
+    async (id: string, role: Role) => {
+      try {
+        await usersService.updateRole(id, role);
+        toast.success('Rol actualizado');
+        refetch();
+      } catch {
+        toast.error('No se pudo actualizar el rol');
+      }
+    },
+    [toast, refetch]
+  );
 
-  const handleDelete = useCallback(async (id: string, name: string) => {
-    if (!confirm(`¿Eliminar el usuario "${name}"? Esta acción no se puede deshacer.`)) return;
-    try {
-      await usersService.remove(id);
-      toast.success('Usuario eliminado');
-      refetch();
-    } catch {
-      toast.error('No se pudo eliminar el usuario');
-    }
-  }, [toast, refetch]);
+  const handleDelete = useCallback(
+    async (id: string, name: string) => {
+      if (!confirm(`¿Eliminar el usuario "${name}"? Esta acción no se puede deshacer.`)) return;
+      try {
+        await usersService.remove(id);
+        toast.success('Usuario eliminado');
+        refetch();
+      } catch {
+        toast.error('No se pudo eliminar el usuario');
+      }
+    },
+    [toast, refetch]
+  );
 
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: 'name',
       header: 'Nombre',
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.name}</span>
-      ),
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
     {
       accessorKey: 'email',
       header: 'Email',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.email}</span>
-      ),
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.email}</span>,
     },
     {
       accessorKey: 'role',
@@ -79,7 +92,11 @@ export function AdminUsersPage() {
       cell: ({ row }) => {
         const isSelf = row.original.id === me?.id;
         if (isSelf) {
-          return <Badge variant={ROLE_VARIANT[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>;
+          return (
+            <Badge variant={ROLE_VARIANT[row.original.role]}>
+              {ROLE_LABELS[row.original.role]}
+            </Badge>
+          );
         }
         return (
           <Select
@@ -143,7 +160,10 @@ export function AdminUsersPage() {
       <FilterBar
         searchValue={search}
         onSearchChange={setSearch}
-        onReset={() => { setSearch(''); setRoleFilter('ALL'); }}
+        onReset={() => {
+          setSearch('');
+          setRoleFilter('ALL');
+        }}
         searchPlaceholder="Buscar por nombre o email…"
       >
         <Select value={roleFilter} onValueChange={v => setRoleFilter(v as Role | 'ALL')}>

@@ -68,45 +68,55 @@ async function getOrganizerStats(userId: string) {
     totalRevenue: revenueAgg._sum.totalPrice ?? 0,
     averageRating: avgRating._avg.rating,
     eventsByCategory: categoryGroups.map(g => ({ category: g.category, count: g._count._all })),
-    reservationsByMonth: buildMonthlyBuckets(rawReservations.map(r => r.createdAt), 6),
+    reservationsByMonth: buildMonthlyBuckets(
+      rawReservations.map(r => r.createdAt),
+      6
+    ),
   };
 }
 
 async function getAdminStats(range: DateRange) {
   const dateFilter = buildDateFilter(range);
 
-  const [totalUsers, publishedEvents, totalReservations, revenueAgg, allEvents, categoryGroups, topOrganizersRaw] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.event.count({ where: { status: EventStatus.PUBLISHED, ...dateFilter } }),
-      prisma.reservation.count({ where: { status: { not: ReservationStatus.CANCELLED } } }),
-      prisma.reservation.aggregate({
-        where: { status: { not: ReservationStatus.CANCELLED } },
-        _sum: { totalPrice: true },
-      }),
-      prisma.event.findMany({ where: dateFilter, select: { startDate: true } }),
-      prisma.event.groupBy({
-        by: ['category'],
-        where: { status: EventStatus.PUBLISHED, ...dateFilter },
-        _count: { _all: true },
-      }),
-      prisma.user.findMany({
-        where: { role: Role.ORGANIZER },
-        select: {
-          id: true,
-          name: true,
-          _count: { select: { events: true } },
-          events: {
-            select: {
-              reservations: {
-                where: { status: { not: ReservationStatus.CANCELLED } },
-                select: { totalPrice: true },
-              },
+  const [
+    totalUsers,
+    publishedEvents,
+    totalReservations,
+    revenueAgg,
+    allEvents,
+    categoryGroups,
+    topOrganizersRaw,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.event.count({ where: { status: EventStatus.PUBLISHED, ...dateFilter } }),
+    prisma.reservation.count({ where: { status: { not: ReservationStatus.CANCELLED } } }),
+    prisma.reservation.aggregate({
+      where: { status: { not: ReservationStatus.CANCELLED } },
+      _sum: { totalPrice: true },
+    }),
+    prisma.event.findMany({ where: dateFilter, select: { startDate: true } }),
+    prisma.event.groupBy({
+      by: ['category'],
+      where: { status: EventStatus.PUBLISHED, ...dateFilter },
+      _count: { _all: true },
+    }),
+    prisma.user.findMany({
+      where: { role: Role.ORGANIZER },
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { events: true } },
+        events: {
+          select: {
+            reservations: {
+              where: { status: { not: ReservationStatus.CANCELLED } },
+              select: { totalPrice: true },
             },
           },
         },
-      }),
-    ]);
+      },
+    }),
+  ]);
 
   const eventsByMonth = Object.entries(
     allEvents.reduce<Record<string, number>>((acc, ev) => {

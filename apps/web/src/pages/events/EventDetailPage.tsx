@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Calendar,
-  MapPin,
-  Star,
-  Ticket,
-  Users,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Star, Ticket, Users } from 'lucide-react';
 import type { Category } from '@convoca/shared';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -25,14 +18,14 @@ import { cn } from '@/lib/utils';
 import type { ReviewWithAuthor } from '@/types';
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  CONCIERTO:   'Concierto',
-  EXPOSICION:  'Exposición',
-  TALLER:      'Taller',
-  MERCADILLO:  'Mercadillo',
-  TEATRO:      'Teatro',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
   CONFERENCIA: 'Conferencia',
   GASTRONOMIA: 'Gastronomía',
-  DEPORTE:     'Deporte',
+  DEPORTE: 'Deporte',
 };
 
 function formatDate(date: string | Date) {
@@ -144,9 +137,7 @@ function ReserveSection({
           onChange={e => setQuantity(Math.max(1, Math.min(maxPerOrder, Number(e.target.value))))}
           className="w-20"
         />
-        {price > 0 && (
-          <span className="ml-auto text-sm font-semibold">{total} €</span>
-        )}
+        {price > 0 && <span className="ml-auto text-sm font-semibold">{total} €</span>}
       </div>
       <Button onClick={handleReserve} disabled={loading} className="w-full">
         <Ticket className="mr-2 h-4 w-4" />
@@ -169,9 +160,11 @@ function ReviewItem({ review }: { review: ReviewWithAuthor }) {
           <StarRating rating={review.rating} />
         </div>
         <span className="ml-auto text-xs text-muted-foreground">
-          {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-            new Date(review.createdAt)
-          )}
+          {new Intl.DateTimeFormat('es-ES', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          }).format(new Date(review.createdAt))}
         </span>
       </div>
       <p className="text-sm text-muted-foreground">{review.comment}</p>
@@ -189,10 +182,7 @@ export function EventDetailPage() {
     loading: reviewsLoading,
     error: reviewsError,
     refetch: reviewsRefetch,
-  } = useFetch(
-    () => reviewsService.byEvent(id ?? '', 1, 10),
-    [id]
-  );
+  } = useFetch(() => reviewsService.byEvent(id ?? '', 1, 10), [id]);
 
   if (loading) return <Loading className="py-24" />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
@@ -217,11 +207,7 @@ export function EventDetailPage() {
           {/* Imagen hero */}
           <div className="h-64 overflow-hidden rounded-xl bg-muted sm:h-80">
             {event.imageUrl ? (
-              <img
-                src={event.imageUrl}
-                alt={event.title}
-                className="h-full w-full object-cover"
-              />
+              <img src={event.imageUrl} alt={event.title} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full items-center justify-center text-6xl text-muted-foreground/20">
                 🎭
@@ -273,13 +259,13 @@ export function EventDetailPage() {
               <p className="text-sm">
                 {event.availableCapacity != null ? (
                   <>
-                    <span className="font-medium">{event.availableCapacity}</span>
-                    {' '}de{' '}
-                    <span className="font-medium">{event.capacity}</span>
-                    {' '}plazas disponibles
+                    <span className="font-medium">{event.availableCapacity}</span> de{' '}
+                    <span className="font-medium">{event.capacity}</span> plazas disponibles
                   </>
                 ) : (
-                  <>Aforo: <span className="font-medium">{event.capacity} personas</span></>
+                  <>
+                    Aforo: <span className="font-medium">{event.capacity} personas</span>
+                  </>
                 )}
               </p>
             </div>
@@ -344,8 +330,8 @@ export function EventDetailPage() {
               {event.status === 'CANCELLED'
                 ? 'Este evento ha sido cancelado.'
                 : event.status === 'COMPLETED'
-                ? 'Este evento ya ha finalizado.'
-                : 'Este evento aún no está publicado.'}
+                  ? 'Este evento ya ha finalizado.'
+                  : 'Este evento aún no está publicado.'}
             </div>
           )}
 

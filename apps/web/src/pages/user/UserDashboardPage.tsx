@@ -14,7 +14,13 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/context/ToastContext';
 import { useMyReservations } from '@/hooks/useMyReservations';
 import { useUserStats } from '@/hooks/useStats';
@@ -34,7 +40,12 @@ const STATUS_VARIANT: Record<ReservationStatus, 'success' | 'destructive' | 'sec
 };
 
 export function UserDashboardPage() {
-  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useUserStats();
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useUserStats();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | 'ALL'>('ALL');
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined });
@@ -49,18 +60,26 @@ export function UserDashboardPage() {
     endDate: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
   };
 
-  const { data: reservations, loading: resLoading, error: resError, refetch: refetchRes } = useMyReservations(reservationFilters);
+  const {
+    data: reservations,
+    loading: resLoading,
+    error: resError,
+    refetch: refetchRes,
+  } = useMyReservations(reservationFilters);
 
-  const handleCancel = useCallback(async (id: string) => {
-    try {
-      await reservationsService.cancel(id);
-      success('Reserva cancelada');
-      refetchRes();
-      refetchStats();
-    } catch {
-      toastError('No se pudo cancelar la reserva');
-    }
-  }, [success, toastError, refetchRes, refetchStats]);
+  const handleCancel = useCallback(
+    async (id: string) => {
+      try {
+        await reservationsService.cancel(id);
+        success('Reserva cancelada');
+        refetchRes();
+        refetchStats();
+      } catch {
+        toastError('No se pudo cancelar la reserva');
+      }
+    },
+    [success, toastError, refetchRes, refetchStats]
+  );
 
   const reset = () => {
     setSearch('');
@@ -86,14 +105,17 @@ export function UserDashboardPage() {
       id: 'fecha',
       accessorFn: row => new Date(row.event.startDate).getTime(),
       header: 'Fecha',
-      cell: ({ row }) => format(new Date(row.original.event.startDate), 'd MMM yyyy', { locale: es }),
+      cell: ({ row }) =>
+        format(new Date(row.original.event.startDate), 'd MMM yyyy', { locale: es }),
     },
     {
       id: 'lugar',
       accessorFn: row => row.event.venue,
       header: 'Lugar',
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.event.venue}, {row.original.event.city}</span>
+        <span className="text-muted-foreground">
+          {row.original.event.venue}, {row.original.event.city}
+        </span>
       ),
     },
     {
@@ -128,11 +150,12 @@ export function UserDashboardPage() {
     .sort((a, b) => new Date(a.event.startDate).getTime() - new Date(b.event.startDate).getTime())
     .slice(0, 5);
 
-  if (statsError) return (
-    <div className="p-8">
-      <ErrorState error={statsError} onRetry={refetchStats} />
-    </div>
-  );
+  if (statsError)
+    return (
+      <div className="p-8">
+        <ErrorState error={statsError} onRetry={refetchStats} />
+      </div>
+    );
 
   return (
     <div className="p-6 space-y-6">
@@ -174,7 +197,10 @@ export function UserDashboardPage() {
             onReset={reset}
             searchPlaceholder="Buscar por evento…"
           >
-            <Select value={statusFilter} onValueChange={v => setStatusFilter(v as ReservationStatus | 'ALL')}>
+            <Select
+              value={statusFilter}
+              onValueChange={v => setStatusFilter(v as ReservationStatus | 'ALL')}
+            >
               <SelectTrigger className="h-9 w-36">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
@@ -186,7 +212,11 @@ export function UserDashboardPage() {
               </SelectContent>
             </Select>
 
-            <DateRangePicker value={dateRange} onChange={setDateRange} placeholder="Fecha del evento" />
+            <DateRangePicker
+              value={dateRange}
+              onChange={setDateRange}
+              placeholder="Fecha del evento"
+            />
           </FilterBar>
 
           <DataTable
@@ -228,7 +258,10 @@ export function UserDashboardPage() {
                         {format(new Date(r.event.startDate), 'd MMM yyyy', { locale: es })}
                       </span>
                       <span className="text-xs font-medium text-primary">
-                        {formatDistanceToNow(new Date(r.event.startDate), { locale: es, addSuffix: true })}
+                        {formatDistanceToNow(new Date(r.event.startDate), {
+                          locale: es,
+                          addSuffix: true,
+                        })}
                       </span>
                     </li>
                   ))}

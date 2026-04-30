@@ -7,17 +7,34 @@ import { ImageUploader } from '@/components/common/ImageUploader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const CATEGORIES = [
-  'CONCIERTO', 'EXPOSICION', 'TALLER', 'MERCADILLO',
-  'TEATRO', 'CONFERENCIA', 'GASTRONOMIA', 'DEPORTE',
+  'CONCIERTO',
+  'EXPOSICION',
+  'TALLER',
+  'MERCADILLO',
+  'TEATRO',
+  'CONFERENCIA',
+  'GASTRONOMIA',
+  'DEPORTE',
 ] as const;
 
 const CATEGORY_LABELS: Record<string, string> = {
-  CONCIERTO: 'Concierto', EXPOSICION: 'Exposición', TALLER: 'Taller',
-  MERCADILLO: 'Mercadillo', TEATRO: 'Teatro', CONFERENCIA: 'Conferencia',
-  GASTRONOMIA: 'Gastronomía', DEPORTE: 'Deporte',
+  CONCIERTO: 'Concierto',
+  EXPOSICION: 'Exposición',
+  TALLER: 'Taller',
+  MERCADILLO: 'Mercadillo',
+  TEATRO: 'Teatro',
+  CONFERENCIA: 'Conferencia',
+  GASTRONOMIA: 'Gastronomía',
+  DEPORTE: 'Deporte',
 };
 
 export const eventSchema = z.object({
@@ -86,7 +103,12 @@ const DEFAULT_VALUES: EventFormData = {
   featured: false,
 };
 
-export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', isSubmitting }: EventFormProps) {
+export function EventForm({
+  defaultValues,
+  onSubmit,
+  submitLabel = 'Guardar',
+  isSubmitting,
+}: EventFormProps) {
   const {
     register,
     handleSubmit,
@@ -127,7 +149,9 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
             placeholder="Describe el evento…"
             className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
-          {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
+          {errors.description && (
+            <p className="text-xs text-destructive">{errors.description.message}</p>
+          )}
         </div>
 
         {/* Category */}
@@ -135,14 +159,18 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
           <Label>Categoría</Label>
           <Select
             value={categoryValue}
-            onValueChange={v => setValue('category', v as EventFormData['category'], { shouldValidate: true })}
+            onValueChange={v =>
+              setValue('category', v as EventFormData['category'], { shouldValidate: true })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map(c => (
-                <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {CATEGORY_LABELS[c]}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -154,7 +182,9 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
           <Label>Estado</Label>
           <Select
             value={statusValue}
-            onValueChange={v => setValue('status', v as 'DRAFT' | 'PUBLISHED', { shouldValidate: true })}
+            onValueChange={v =>
+              setValue('status', v as 'DRAFT' | 'PUBLISHED', { shouldValidate: true })
+            }
           >
             <SelectTrigger>
               <SelectValue />
@@ -170,7 +200,9 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
         <div className="space-y-1.5">
           <Label htmlFor="startDate">Fecha de inicio</Label>
           <Input type="datetime-local" id="startDate" {...register('startDate')} />
-          {errors.startDate && <p className="text-xs text-destructive">{errors.startDate.message}</p>}
+          {errors.startDate && (
+            <p className="text-xs text-destructive">{errors.startDate.message}</p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="endDate">Fecha de fin</Label>
@@ -218,8 +250,15 @@ export function EventForm({ defaultValues, onSubmit, submitLabel = 'Guardar', is
 
         {/* Featured */}
         <div className="sm:col-span-2 flex items-center gap-2">
-          <input type="checkbox" id="featured" {...register('featured')} className="h-4 w-4 rounded border-input" />
-          <Label htmlFor="featured" className="cursor-pointer">Evento destacado</Label>
+          <input
+            type="checkbox"
+            id="featured"
+            {...register('featured')}
+            className="h-4 w-4 rounded border-input"
+          />
+          <Label htmlFor="featured" className="cursor-pointer">
+            Evento destacado
+          </Label>
         </div>
       </div>
 

@@ -36,7 +36,7 @@ describe('toastReducer', () => {
     for (const t of toasts) {
       state = toastReducer(state, { type: 'ADD_TOAST', payload: t });
     }
-    expect(state.toasts.map((t) => t.id)).toEqual(['1', '2', '3']);
+    expect(state.toasts.map(t => t.id)).toEqual(['1', '2', '3']);
   });
 
   it('REMOVE_TOAST: elimina el toast con el id indicado', () => {
@@ -51,7 +51,7 @@ describe('toastReducer', () => {
     const toast = makeToast({ id: 'real' });
     const next = toastReducer(
       { toasts: [toast] },
-      { type: 'REMOVE_TOAST', payload: 'inexistente' },
+      { type: 'REMOVE_TOAST', payload: 'inexistente' }
     );
     expect(next.toasts).toHaveLength(1);
   });

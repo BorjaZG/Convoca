@@ -73,7 +73,10 @@ export function ImageUploader({ value, onChange, folder = 'convoca/events' }: Im
   return (
     <div className="space-y-2">
       {value ? (
-        <div className="relative w-full overflow-hidden rounded-lg border border-border" style={{ aspectRatio: '16/7', maxHeight: '240px' }}>
+        <div
+          className="relative w-full overflow-hidden rounded-lg border border-border"
+          style={{ aspectRatio: '16/7', maxHeight: '240px' }}
+        >
           <img src={value} alt="Cartel del evento" className="h-full w-full object-cover" />
           <div className="absolute right-2 top-2 flex gap-1.5">
             <button
@@ -104,7 +107,9 @@ export function ImageUploader({ value, onChange, folder = 'convoca/events' }: Im
           onKeyDown={e => e.key === 'Enter' && state !== 'uploading' && inputRef.current?.click()}
           className={[
             'flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 transition-colors',
-            isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50 hover:bg-muted/30',
+            isDragging
+              ? 'border-primary bg-primary/5'
+              : 'border-border hover:border-muted-foreground/50 hover:bg-muted/30',
             state === 'uploading' ? 'pointer-events-none opacity-70' : '',
           ].join(' ')}
         >

@@ -2,12 +2,9 @@ import { cn } from '@/lib/utils';
 import { useToast, type Toast } from '@/context/ToastContext';
 
 const typeStyles: Record<Toast['type'], string> = {
-  success:
-    'border-green-500/40 bg-green-50 text-green-900 dark:bg-green-950 dark:text-green-100',
-  error:
-    'border-destructive/40 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-100',
-  info:
-    'border-blue-500/40 bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100',
+  success: 'border-green-500/40 bg-green-50 text-green-900 dark:bg-green-950 dark:text-green-100',
+  error: 'border-destructive/40 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-100',
+  info: 'border-blue-500/40 bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100',
 };
 
 const iconStyles: Record<Toast['type'], string> = {
@@ -34,20 +31,20 @@ export function ToastViewport() {
       aria-live="polite"
       className="fixed bottom-4 right-4 z-50 flex w-80 flex-col gap-2"
     >
-      {toasts.map((toast) => (
+      {toasts.map(toast => (
         <div
           key={toast.id}
           role="alert"
           className={cn(
             'flex items-start gap-3 rounded-lg border p-4 shadow-lg animate-toast-in',
-            typeStyles[toast.type],
+            typeStyles[toast.type]
           )}
         >
           <span
             aria-hidden
             className={cn(
               'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold',
-              iconStyles[toast.type],
+              iconStyles[toast.type]
             )}
           >
             {icons[toast.type]}
