@@ -16,7 +16,7 @@ Monorepo pnpm con backend REST (Node + Express + Prisma + PostgreSQL) y frontend
 | Imágenes   | Cloudinary (firma server-side, subida directa desde cliente) |
 | Validación | Zod (backend y frontend) · react-hook-form                   |
 | Gráficos   | Recharts                                                     |
-| Testing    | Vitest · Supertest · Testing Library (116 tests)             |
+| Testing    | Vitest · Supertest · Testing Library (66 tests)              |
 | Shared     | `@convoca/shared` — tipos TypeScript compartidos             |
 
 ---
@@ -94,7 +94,7 @@ pnpm dev
 | ------------- | ------------------------------------------ |
 | `pnpm dev`    | Levanta API y Web en paralelo (watch mode) |
 | `pnpm build`  | Compila API y Web                          |
-| `pnpm test`   | Ejecuta los 116 tests del monorepo         |
+| `pnpm test`   | Ejecuta los 66 tests del monorepo          |
 | `pnpm lint`   | ESLint en todos los paquetes               |
 | `pnpm format` | Prettier en todos los ficheros             |
 
@@ -115,7 +115,7 @@ pnpm --filter api test
 pnpm --filter web test
 ```
 
-116 tests en total: 48 de backend (Vitest + Supertest) y 68 de frontend (Vitest + Testing Library).
+66 tests en total: 26 de backend (Vitest + Supertest) y 40 de frontend (Vitest + Testing Library).
 
 ---
 
