@@ -20,7 +20,6 @@ type Action =
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'LOGOUT' };
 
-// Exported for unit testing
 export function authReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'AUTH_START':
@@ -58,17 +57,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
 
-  // ToastProvider sits above AuthProvider in the tree, so this is safe
   const { toast } = useToast();
 
-  // Hydrate session on mount — api.ts handles the refresh retry transparently
   useEffect(() => {
     dispatch({ type: 'AUTH_START' });
     authService
       .getMe()
       .then(({ user }) => dispatch({ type: 'AUTH_SUCCESS', payload: user }))
       .catch(() => dispatch({ type: 'AUTH_FAILURE', payload: '' }));
-  }, []); // intentionally empty — runs once on mount
+  }, []);
 
   const login = useCallback(
     async (email: string, password: string) => {

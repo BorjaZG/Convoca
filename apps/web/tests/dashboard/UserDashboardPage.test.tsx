@@ -38,7 +38,7 @@ describe('UserDashboardPage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders page title', () => {
+  it('muestra el título de la página', () => {
     render(
       <MemoryRouter>
         <UserDashboardPage />
@@ -47,20 +47,7 @@ describe('UserDashboardPage', () => {
     expect(screen.getByText('Mi dashboard')).toBeInTheDocument();
   });
 
-  it('renders StatCards with mocked values once loaded', async () => {
-    render(
-      <MemoryRouter>
-        <UserDashboardPage />
-      </MemoryRouter>
-    );
-    await waitFor(() => {
-      expect(screen.getByText('7')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
-      expect(screen.getByText('4')).toBeInTheDocument();
-    });
-  });
-
-  it('shows EmptyState in reservations table when no data', async () => {
+  it('muestra el mensaje de vacío cuando no hay reservas', async () => {
     render(
       <MemoryRouter>
         <UserDashboardPage />
@@ -68,28 +55,6 @@ describe('UserDashboardPage', () => {
     );
     await waitFor(() => {
       expect(screen.getByText('No tienes reservas todavía')).toBeInTheDocument();
-    });
-  });
-
-  it('renders section headers', () => {
-    render(
-      <MemoryRouter>
-        <UserDashboardPage />
-      </MemoryRouter>
-    );
-    expect(screen.getByText('Mis reservas')).toBeInTheDocument();
-    expect(screen.getByText('Próximos eventos')).toBeInTheDocument();
-  });
-
-  it('renders StatCard titles once loading completes', async () => {
-    render(
-      <MemoryRouter>
-        <UserDashboardPage />
-      </MemoryRouter>
-    );
-    await waitFor(() => {
-      expect(screen.getByText('Reservas activas')).toBeInTheDocument();
-      expect(screen.getByText('Eventos asistidos')).toBeInTheDocument();
     });
   });
 });

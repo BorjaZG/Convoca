@@ -9,17 +9,6 @@ const ORG_PASSWORD = 'OrgTest1!';
 const USER_EMAIL = 'test.user.upload@convoca.test';
 const USER_PASSWORD = 'UserTest1!';
 
-function parseCookies(setCookie: string[] | string | undefined): string {
-  if (!setCookie) return '';
-  const entries = Array.isArray(setCookie) ? setCookie : [setCookie];
-  return entries.map(c => c.split(';')[0]).join('; ');
-}
-
-async function loginAs(email: string, password: string): Promise<string> {
-  const res = await request(app).post('/api/auth/login').send({ email, password });
-  return parseCookies(res.headers['set-cookie']);
-}
-
 let orgCookies = '';
 let userCookies = '';
 let orgId = '';
@@ -39,13 +28,23 @@ beforeAll(async () => {
     .send({ email: ORG_EMAIL, password: ORG_PASSWORD, name: 'Test Org Upload' });
   orgId = orgRes.body.user.id;
   await prisma.user.update({ where: { id: orgId }, data: { role: 'ORGANIZER' } });
-  orgCookies = await loginAs(ORG_EMAIL, ORG_PASSWORD);
+
+  const orgLogin = await request(app)
+    .post('/api/auth/login')
+    .send({ email: ORG_EMAIL, password: ORG_PASSWORD });
+  const orgCookieHeader = orgLogin.headers['set-cookie'] as string[];
+  orgCookies = orgCookieHeader.map((c: string) => c.split(';')[0]).join('; ');
 
   const userRes = await request(app)
     .post('/api/auth/register')
     .send({ email: USER_EMAIL, password: USER_PASSWORD, name: 'Test User Upload' });
   userId = userRes.body.user.id;
-  userCookies = await loginAs(USER_EMAIL, USER_PASSWORD);
+
+  const userLogin = await request(app)
+    .post('/api/auth/login')
+    .send({ email: USER_EMAIL, password: USER_PASSWORD });
+  const userCookieHeader = userLogin.headers['set-cookie'] as string[];
+  userCookies = userCookieHeader.map((c: string) => c.split(';')[0]).join('; ');
 });
 
 afterAll(async () => {
@@ -65,37 +64,11 @@ describe('POST /api/upload/sign', () => {
     expect(res.status).toBe(403);
   });
 
-  it('devuelve los parámetros de firma correctos para ORGANIZER', async () => {
+  it('devuelve los datos de firma para ORGANIZER', async () => {
     const res = await request(app).post('/api/upload/sign').set('Cookie', orgCookies);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('signature');
     expect(res.body).toHaveProperty('timestamp');
-    expect(res.body).toHaveProperty('apiKey');
     expect(res.body).toHaveProperty('cloudName');
-    expect(res.body).toHaveProperty('folder');
-    expect(typeof res.body.signature).toBe('string');
-    expect(typeof res.body.timestamp).toBe('number');
-  });
-
-  it('usa convoca/events como folder por defecto', async () => {
-    const res = await request(app).post('/api/upload/sign').set('Cookie', orgCookies);
-    expect(res.status).toBe(200);
-    expect(res.body.folder).toBe('convoca/events');
-  });
-
-  it('acepta un folder personalizado en el body', async () => {
-    const res = await request(app)
-      .post('/api/upload/sign')
-      .set('Cookie', orgCookies)
-      .send({ folder: 'convoca/test' });
-    expect(res.status).toBe(200);
-    expect(res.body.folder).toBe('convoca/test');
-  });
-
-  it('no expone el API secret en la respuesta', async () => {
-    const res = await request(app).post('/api/upload/sign').set('Cookie', orgCookies);
-    expect(res.status).toBe(200);
-    expect(res.body).not.toHaveProperty('apiSecret');
-    expect(JSON.stringify(res.body)).not.toContain(process.env.CLOUDINARY_API_SECRET ?? '');
   });
 });

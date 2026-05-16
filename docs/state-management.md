@@ -2,44 +2,37 @@
 
 ## La regla que sigo
 
-El estado vive donde tenga la vida más corta posible. Si algo solo le importa a un componente, es estado local. Si lo necesitan varios componentes que no están en la misma rama del árbol, es global. Si viene del servidor, no va a Context.
+El estado vive donde tenga la vida más corta posible. Si solo lo necesita un componente, es local. Si lo necesitan varios componentes que no están relacionados, es global. Si viene del servidor, no va a Context.
 
 ---
 
-## Qué va dónde y por qué
+## Qué va dónde
 
-| Estado | Mecanismo | Dónde vive | Por qué ahí |
-|---|---|---|---|
-| Sesión del usuario | `useReducer` + Context | `AuthContext` | Muchos sitios necesitan saber si hay sesión y quién es el usuario |
-| Tema visual (dark/light) | `useState` + Context | `ThemeContext` | Afecta a toda la UI y se persiste en localStorage |
-| Toasts (notificaciones) | `useReducer` + Context | `ToastContext` | Cualquier parte de la app puede disparar un toast, incluso otro Context |
-| Valores de formulario | `react-hook-form` | Local al componente | Cambian con cada tecla, si fueran globales re-renderizarían todo |
-| Filtros y paginación | `useState` | Local a la página | Solo interesan a esa vista concreta |
-| Eventos, reservas, reseñas... | Hooks con `useFetch` | `useEvents`, `useReservations`... | Son datos del servidor con su propio ciclo (loading, error, refetch) |
+| Estado | Mecanismo | Dónde vive |
+|---|---|---|
+| Sesión del usuario | `useReducer` + Context | `AuthContext` |
+| Tema visual (dark/light) | `useState` + Context | `ThemeContext` |
+| Toasts (notificaciones) | `useReducer` + Context | `ToastContext` |
+| Valores de formulario | `react-hook-form` | Local al componente |
+| Filtros y paginación | `useState` | Local a la página |
+| Eventos, reservas, reseñas... | Hooks con `useFetch` | `useEvents`, `useReservations`... |
 
 ---
 
 ## Por qué no uso Redux
 
-Redux mete mucho boilerplate: actions, action creators, reducers, selectors, middleware, store... Todo eso tiene sentido cuando tienes un estado global complejo con muchas interacciones cruzadas. En Convoca el estado global son tres cosas independientes (sesión, tema, toasts). Context + useReducer lo resuelve sin dependencias externas.
-
-Si algún día la app creciera mucho (más de 5-6 contextos que interactúan entre sí), migraría a Zustand que es más ligero. Pero la API de los hooks (`useAuth`, `useToast`, `useTheme`) no cambiaría para los consumidores, así que la migración sería fácil.
+Redux tiene mucho boilerplate: actions, reducers, selectors, store, middleware... Tiene sentido cuando el estado global es complejo y con muchas interacciones. En Convoca el estado global son tres cosas independientes. Context + useReducer lo resuelve sin dependencias externas.
 
 ---
 
-## Por qué no hago un solo Context gigante
+## Por qué no hago un solo Context
+
+Si meto todo en un solo Context, cuando aparece un toast se re-renderiza toda la app aunque el componente solo necesite el tema. Con contextos separados, cada consumidor solo reacciona a lo que le importa:
 
 ```tsx
-// ❌ Esto está mal
-const AppContext = createContext({ user, theme, toasts, events, filters, ... });
-```
-
-Si meto todo en un solo Context, cada vez que aparece un toast se re-renderiza toda la app, incluyendo componentes que solo necesitan el tema. Con tres contextos separados, cada consumidor solo reacciona a lo que le importa:
-
-```tsx
-<ThemeProvider>      {/* solo re-renderiza cuando cambia el tema */}
-  <ToastProvider>    {/* solo re-renderiza cuando aparece/desaparece un toast */}
-    <AuthProvider>   {/* solo re-renderiza cuando cambia la sesión */}
+<ThemeProvider>
+  <ToastProvider>
+    <AuthProvider>
       <App />
     </AuthProvider>
   </ToastProvider>
@@ -48,20 +41,19 @@ Si meto todo en un solo Context, cada vez que aparece un toast se re-renderiza t
 
 ---
 
-## Por qué los datos del servidor NO van a Context
+## Por qué los datos del servidor no van a Context
 
-Los datos remotos (eventos, reservas, reseñas) tienen necesidades que Context no cubre bien: revalidación automática, deduplicación de peticiones, cache, mostrar datos viejos mientras carga los nuevos...
+Los datos remotos tienen necesidades que Context no cubre bien: revalidación, loading/error, refetch al cambiar filtros...
 
-Montar todo eso a mano sobre Context sería reinventar React Query. En su lugar, cada módulo tiene su hook propio (`useEvents`, `useEvent`, `useReservations`, `useStats`) construido sobre el hook genérico `useFetch`, que gestiona loading/error/data sin necesidad de librerías externas de cache.
+Cada módulo tiene su hook propio (`useEvents`, `useReservations`, `useStats`...) construido sobre el hook genérico `useFetch`, que gestiona loading/error/data sin librerías externas.
 
 ---
 
-## Cómo se componen los contextos
+## Cómo se relacionan los contextos
 
-Un ejemplo real: `AuthContext` usa `ToastContext` directamente para mostrar notificaciones cuando el login funciona o falla:
+`AuthContext` usa `ToastContext` para mostrar notificaciones cuando el login funciona o falla:
 
 ```tsx
-// Dentro de AuthProvider
 const { toast } = useToast();
 
 const login = async (email, password) => {
@@ -76,18 +68,18 @@ const login = async (email, password) => {
 };
 ```
 
-La `LoginPage` no sabe cómo se muestra el error — solo llama a `login()` y navega si tiene éxito. El toast lo gestiona el contexto por debajo.
+La `LoginPage` no sabe cómo se muestra el error — solo llama a `login()` y navega si tiene éxito.
 
 ---
 
-## Orden de los providers en main.tsx
+## Orden de los providers
 
 ```
 ThemeProvider         ← el más externo, no depende de nadie
   ToastProvider       ← por encima de Auth para que Auth pueda usarlo
-    AuthProvider      ← el más interno, depende de Toast
+    AuthProvider      ← depende de Toast
       BrowserRouter
         Routes
 ```
 
-El orden importa: AuthProvider necesita llamar a `useToast()`, así que ToastProvider tiene que estar por encima.
+El orden importa: `AuthProvider` necesita llamar a `useToast()`, así que `ToastProvider` tiene que estar por encima.

@@ -1,16 +1,14 @@
 # Despliegue — Convoca
 
-## Setup local (desarrollo)
+## Setup local
 
-### Qué necesitas tener instalado
+### Lo que necesitas
 
 | Herramienta | Versión | Para qué |
 |---|---|---|
 | Node.js | 20 LTS | Ejecutar API y Web |
-| pnpm | 9.x | Gestionar dependencias del monorepo |
+| pnpm | 9.x | Gestionar dependencias |
 | Docker + Docker Compose | Cualquier versión reciente | Levantar PostgreSQL |
-
-Comprueba que todo está:
 
 ```bash
 node -v        # v20.x.x
@@ -28,7 +26,7 @@ cd convoca
 pnpm install
 ```
 
-`pnpm install` instala las dependencias de los tres paquetes (api, web, shared) y enlaza `@convoca/shared` como dependencia local.
+`pnpm install` instala las dependencias de los tres paquetes y enlaza `@convoca/shared` como dependencia local automáticamente.
 
 ---
 
@@ -38,7 +36,7 @@ pnpm install
 docker compose up -d
 ```
 
-Levanta un contenedor de PostgreSQL 16 en el puerto 5432 con estas credenciales:
+Levanta PostgreSQL 16 en el puerto 5432 con estas credenciales:
 
 | Variable | Valor |
 |---|---|
@@ -46,12 +44,6 @@ Levanta un contenedor de PostgreSQL 16 en el puerto 5432 con estas credenciales:
 | Contraseña | `convoca` |
 | Base de datos | `convoca` |
 | Puerto | `5432` |
-
-Para comprobar que está corriendo:
-
-```bash
-docker compose ps
-```
 
 ---
 
@@ -61,7 +53,7 @@ docker compose ps
 cp apps/api/.env.example apps/api/.env
 ```
 
-El fichero ya viene apuntando a la BD del paso anterior. Si quieres usar la subida de imágenes, rellena las credenciales de Cloudinary:
+El fichero ya apunta a la BD del paso anterior. Si quieres usar la subida de imágenes, rellena las credenciales de Cloudinary:
 
 ```env
 DATABASE_URL=postgresql://convoca:convoca@localhost:5432/convoca
@@ -73,25 +65,25 @@ PORT=4000
 NODE_ENV=development
 CORS_ORIGIN=http://localhost:5173
 
-# Cloudinary (necesario para subir carteles de eventos)
+# Cloudinary (para subir carteles de eventos)
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 ```
 
-El frontend no necesita `.env` en desarrollo — usa `http://localhost:4000` por defecto. Si lo necesitas, crea `apps/web/.env.local` con `VITE_API_URL=http://localhost:4000`.
+El frontend no necesita `.env` en desarrollo, usa `http://localhost:4000` por defecto.
 
 ---
 
 ### 4. Migraciones y seed
 
-Crea las tablas:
+Crear las tablas:
 
 ```bash
 pnpm --filter api exec prisma migrate dev
 ```
 
-Opcionalmente, carga datos de prueba (3 usuarios con los tres roles + eventos, reservas y reseñas):
+Opcionalmente, cargar datos de prueba (3 usuarios con sus roles + eventos, reservas y reseñas):
 
 ```bash
 pnpm --filter api exec tsx prisma/seed.ts
@@ -105,14 +97,12 @@ pnpm --filter api exec tsx prisma/seed.ts
 pnpm dev
 ```
 
-Levanta las dos apps a la vez:
-
 | App | URL |
 |---|---|
 | API | http://localhost:4000 |
 | Web | http://localhost:5173 |
 
-Comprueba que la API responde:
+Para comprobar que la API está viva:
 
 ```bash
 curl http://localhost:4000/health
@@ -121,7 +111,7 @@ curl http://localhost:4000/health
 
 ---
 
-### Correr tests
+### Correr los tests
 
 Los tests de backend usan la BD real, así que necesitas Docker corriendo.
 
@@ -140,7 +130,7 @@ pnpm --filter api exec vitest run --coverage
 pnpm --filter web exec vitest run --coverage
 ```
 
-Los tests de backend crean y limpian sus propios datos (usan emails `@convoca.test`), no interfieren con el seed.
+Los tests crean y limpian sus propios datos (emails `@convoca.test`) y no interfieren con el seed.
 
 ---
 
@@ -150,13 +140,13 @@ Los tests de backend crean y limpian sus propios datos (usan emails `@convoca.te
 
 | Script | Qué hace |
 |---|---|
-| `pnpm dev` | Levanta API y Web en paralelo con hot reload |
+| `pnpm dev` | Levanta API y Web en paralelo |
 | `pnpm build` | Compila todo |
 | `pnpm test` | Corre todos los tests |
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier |
 
-**Solo API (`pnpm --filter api <script>`):**
+**Solo API:**
 
 | Script | Qué hace |
 |---|---|
@@ -165,7 +155,7 @@ Los tests de backend crean y limpian sus propios datos (usan emails `@convoca.te
 | `start` | Ejecuta el build compilado |
 | `test` | Tests con Vitest |
 
-**Solo Web (`pnpm --filter web <script>`):**
+**Solo Web:**
 
 | Script | Qué hace |
 |---|---|
@@ -176,13 +166,11 @@ Los tests de backend crean y limpian sus propios datos (usan emails `@convoca.te
 
 ---
 
-## Despliegue en la nube
+## Despliegue en producción
 
-Pendiente de documentar:
+Pendiente. La idea sería:
 
-- Proveedor para la API (Railway / Render / Fly.io)
-- Proveedor para el frontend (Vercel / Netlify)
-- Variables de entorno en producción
-- Base de datos gestionada
-- Dominio y CORS en producción
-- CI/CD
+- API en Railway o Render
+- Frontend en Vercel o Netlify
+- PostgreSQL gestionado (Railway o Supabase)
+- Configurar variables de entorno y CORS para el dominio de producción

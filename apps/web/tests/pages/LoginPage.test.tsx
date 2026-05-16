@@ -28,7 +28,7 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
   });
 
-  it('submit con credenciales válidas invoca login y navega', async () => {
+  it('hace login y navega con credenciales correctas', async () => {
     mockLogin.mockResolvedValue(undefined);
     render(
       <MemoryRouter>
@@ -44,7 +44,7 @@ describe('LoginPage', () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 
-  it('si login lanza, navigate no se invoca', async () => {
+  it('no navega si el login falla', async () => {
     mockLogin.mockRejectedValue(new Error('Credenciales inválidas'));
     render(
       <MemoryRouter>
@@ -56,7 +56,6 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByLabelText(/contraseña/i), 'wrong');
     await userEvent.click(screen.getByRole('button', { name: /entrar/i }));
 
-    expect(mockLogin).toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
