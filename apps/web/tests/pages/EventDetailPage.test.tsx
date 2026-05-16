@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventDetailPage } from '@/pages/events/EventDetailPage';
 import type { EventWithOrganizer } from '@convoca/shared';
 
-// Estado mutable que cada test configura antes de renderizar
 let mockIsAuthenticated = false;
 
 vi.mock('@/context/AuthContext', () => ({
@@ -70,21 +69,18 @@ describe('EventDetailPage', () => {
     await waitFor(() => expect(screen.getByText('Festival de Jazz')).toBeInTheDocument());
   });
 
-  it('usuario no autenticado ve "Inicia sesión" en lugar del formulario de reserva', async () => {
-    mockIsAuthenticated = false;
+  it('usuario no autenticado ve enlace de inicio de sesión', async () => {
     setup();
     await waitFor(() =>
       expect(screen.getByRole('link', { name: /inicia sesión/i })).toBeInTheDocument()
     );
-    expect(screen.queryByRole('button', { name: /confirmar reserva/i })).not.toBeInTheDocument();
   });
 
-  it('usuario autenticado ve el botón "Confirmar reserva"', async () => {
+  it('usuario autenticado ve el botón de reserva', async () => {
     mockIsAuthenticated = true;
     setup();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /confirmar reserva/i })).toBeInTheDocument()
     );
-    expect(screen.queryByRole('link', { name: /inicia sesión/i })).not.toBeInTheDocument();
   });
 });

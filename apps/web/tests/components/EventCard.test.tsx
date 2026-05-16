@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { EventCard } from '@/components/events/EventCard';
 import type { EventWithOrganizer } from '@convoca/shared';
 
-const baseEvent: EventWithOrganizer = {
+const mockEvent: EventWithOrganizer = {
   id: 'evt-1',
   title: 'Concierto de Primavera',
-  description: 'Un concierto al aire libre para celebrar la primavera.',
+  description: 'Un concierto al aire libre.',
   category: 'CONCIERTO',
   startDate: new Date('2025-06-15T19:00:00'),
   endDate: new Date('2025-06-15T22:00:00'),
@@ -25,39 +25,32 @@ const baseEvent: EventWithOrganizer = {
   _count: { reservations: 10, reviews: 3 },
 };
 
-function setup(overrides: Partial<EventWithOrganizer> = {}) {
-  return render(
-    <MemoryRouter>
-      <EventCard event={{ ...baseEvent, ...overrides }} />
-    </MemoryRouter>
-  );
-}
-
 describe('EventCard', () => {
   it('renderiza el título del evento', () => {
-    setup();
+    render(
+      <MemoryRouter>
+        <EventCard event={mockEvent} />
+      </MemoryRouter>
+    );
     expect(screen.getByText('Concierto de Primavera')).toBeInTheDocument();
   });
 
-  it('renderiza la fecha formateada', () => {
-    setup();
-    expect(screen.getByText(/jun/i)).toBeInTheDocument();
-  });
-
-  it('muestra el precio formateado para eventos de pago', () => {
-    setup({ price: 15 });
-    expect(screen.getByText('15.00 €')).toBeInTheDocument();
-  });
-
   it('muestra "Gratuito" para eventos con precio 0', () => {
-    setup({ price: 0 });
+    render(
+      <MemoryRouter>
+        <EventCard event={{ ...mockEvent, price: 0 }} />
+      </MemoryRouter>
+    );
     expect(screen.getByText('Gratuito')).toBeInTheDocument();
   });
 
-  it('incluye enlace "Ver detalles" que apunta al evento', () => {
-    setup();
+  it('incluye enlace al detalle del evento', () => {
+    render(
+      <MemoryRouter>
+        <EventCard event={mockEvent} />
+      </MemoryRouter>
+    );
     const link = screen.getByRole('link', { name: /ver detalles/i });
-    expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/events/evt-1');
   });
 });

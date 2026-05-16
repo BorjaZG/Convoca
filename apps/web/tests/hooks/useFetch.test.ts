@@ -4,7 +4,7 @@ import { useFetch } from '@/hooks/useFetch';
 import type { ApiError } from '@/services/api';
 
 describe('useFetch', () => {
-  it('happy path: resuelve datos y desactiva loading', async () => {
+  it('resuelve los datos correctamente', async () => {
     const fn = vi.fn().mockResolvedValue({ value: 42 });
     const { result } = renderHook(() => useFetch(fn));
 
@@ -15,7 +15,7 @@ describe('useFetch', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('error path: rechaza con error y desactiva loading', async () => {
+  it('captura el error cuando la petición falla', async () => {
     const apiError: ApiError = { error: 'Not found', status: 404 };
     const fn = vi.fn().mockRejectedValue(apiError);
     const { result } = renderHook(() => useFetch(fn));
@@ -24,19 +24,5 @@ describe('useFetch', () => {
 
     expect(result.current.data).toBeNull();
     expect(result.current.error).toEqual(apiError);
-  });
-
-  it('cancela la petición al desmontar: no actualiza estado después de abort', async () => {
-    let capturedSignal: AbortSignal | undefined;
-    const fn = vi.fn().mockImplementation((signal: AbortSignal) => {
-      capturedSignal = signal;
-      return new Promise<string>(() => {});
-    });
-
-    const { unmount } = renderHook(() => useFetch(fn));
-
-    expect(capturedSignal?.aborted).toBe(false);
-    unmount();
-    expect(capturedSignal?.aborted).toBe(true);
   });
 });

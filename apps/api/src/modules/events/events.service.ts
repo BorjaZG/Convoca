@@ -45,7 +45,7 @@ export async function listEvents(filters: EventFilters) {
   const { page, limit, skip } = paginate(filters);
 
   const where: Prisma.EventWhereInput = {
-    status: { in: [EventStatus.PUBLISHED, EventStatus.DRAFT] },
+    status: EventStatus.PUBLISHED,
     ...(filters.category && { category: filters.category as Prisma.EnumCategoryFilter }),
     ...(filters.city && { city: { contains: filters.city, mode: 'insensitive' } }),
     ...(filters.q && { title: { contains: filters.q, mode: 'insensitive' } }),

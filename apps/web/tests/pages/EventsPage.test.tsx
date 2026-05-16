@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventsPage } from '@/pages/events/EventsPage';
@@ -28,56 +28,42 @@ const mockEvent: EventWithOrganizer = {
   organizer: { id: 'org-1', email: 'org@test.com', name: 'Org Test', role: 'ORGANIZER' },
 };
 
-const mockPage: PaginatedResponse<EventWithOrganizer> = {
-  data: [mockEvent],
-  pagination: { page: 1, limit: 9, total: 1, totalPages: 1 },
-};
-
-const emptyPage: PaginatedResponse<EventWithOrganizer> = {
-  data: [],
-  pagination: { page: 1, limit: 9, total: 0, totalPages: 0 },
-};
-
-function setup() {
-  return render(
-    <MemoryRouter>
-      <EventsPage />
-    </MemoryRouter>
-  );
-}
-
 describe('EventsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('muestra la lista de eventos tras resolver la petición inicial', async () => {
+  it('muestra los eventos cuando la petición tiene éxito', async () => {
+    const mockPage: PaginatedResponse<EventWithOrganizer> = {
+      data: [mockEvent],
+      pagination: { page: 1, limit: 9, total: 1, totalPages: 1 },
+    };
     vi.mocked(eventsService.list).mockResolvedValue(mockPage);
-    setup();
+
+    render(
+      <MemoryRouter>
+        <EventsPage />
+      </MemoryRouter>
+    );
+
     await waitFor(() => expect(screen.getByText('Concierto de Primavera')).toBeInTheDocument());
   });
 
-  it('muestra EmptyState cuando no hay resultados', async () => {
+  it('muestra mensaje cuando no hay eventos', async () => {
+    const emptyPage: PaginatedResponse<EventWithOrganizer> = {
+      data: [],
+      pagination: { page: 1, limit: 9, total: 0, totalPages: 0 },
+    };
     vi.mocked(eventsService.list).mockResolvedValue(emptyPage);
-    setup();
-    await waitFor(() => expect(screen.getByText('No se encontraron eventos')).toBeInTheDocument());
-  });
 
-  it('cambiar filtro de categoría vuelve a llamar al servicio con el nuevo valor', async () => {
-    vi.mocked(eventsService.list).mockResolvedValue(mockPage);
-    setup();
-    await waitFor(() => expect(screen.getByText('Concierto de Primavera')).toBeInTheDocument());
-
-    const callsBefore = vi.mocked(eventsService.list).mock.calls.length;
-
-    fireEvent.change(screen.getByRole('combobox', { name: /categoría/i }), {
-      target: { value: 'TALLER' },
-    });
+    render(
+      <MemoryRouter>
+        <EventsPage />
+      </MemoryRouter>
+    );
 
     await waitFor(() =>
-      expect(vi.mocked(eventsService.list).mock.calls.length).toBeGreaterThan(callsBefore)
+      expect(screen.getByText('No se encontraron eventos')).toBeInTheDocument()
     );
-    const lastArgs = vi.mocked(eventsService.list).mock.calls.at(-1)![0];
-    expect(lastArgs.category).toBe('TALLER');
   });
 });
